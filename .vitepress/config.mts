@@ -1,0 +1,106 @@
+import { defineConfig } from 'vitepress'
+
+const base = process.env.DOCS_BASE || '/'
+
+export default defineConfig({
+  base,
+  lang: 'zh-CN',
+  title: 'kemo-agent',
+  description: '面向新一代个人智能基础设施的本地多用户 Agent Runtime',
+  cleanUrls: true,
+  lastUpdated: true,
+  head: [
+    ['link', { rel: 'icon', type: 'image/png', href: `${base}logo.png` }],
+    ['meta', { name: 'theme-color', content: '#5966d9' }]
+  ],
+  themeConfig: {
+    logo: '/logo.png',
+    siteTitle: 'kemo-agent',
+    nav: [
+      { text: '首页', link: '/' },
+      { text: '使用指南', link: '/guide/what-is-kemo-agent' },
+      { text: '配置', link: '/config/global-config' },
+      { text: '开发', link: '/dev/architecture' },
+      { text: '原理', link: '/internals/runtime' },
+      { text: 'GitHub', link: 'https://github.com/kesepain-KE/kemo-agent' }
+    ],
+    sidebar: [
+      {
+        text: '指南',
+        collapsed: false,
+        items: [
+          { text: '关于 kemo-agent', link: '/guide/what-is-kemo-agent' },
+          { text: '快速开始', link: '/guide/getting-started' },
+          { text: '安装部署', link: '/guide/installation' },
+          { text: '首次运行', link: '/guide/first-run' }
+        ]
+      },
+      {
+        text: '使用',
+        collapsed: false,
+        items: [
+          { text: 'Web UI', link: '/usage/webui' },
+          { text: '命令行', link: '/usage/cli' },
+          { text: '对话与历史', link: '/usage/chat-history' },
+          { text: '知识库', link: '/usage/knowledge-base' },
+          { text: '潮汐记忆系统', link: '/usage/memory-system' },
+          { text: '任务计划', link: '/usage/task-plan' },
+          { text: '定时任务', link: '/usage/cron-tasks' },
+          { text: '子代理', link: '/usage/sub-agents' },
+          { text: '感知与拓展', link: '/usage/sense-expand' },
+          { text: '消息平台接入', link: '/usage/message-platform' }
+        ]
+      },
+      {
+        text: '配置',
+        collapsed: false,
+        items: [
+          { text: '全局配置', link: '/config/global-config' },
+          { text: '用户配置', link: '/config/user-config' },
+          { text: '环境变量', link: '/config/env-vars' },
+          { text: 'Provider', link: '/config/provider' }
+        ]
+      },
+      {
+        text: '开发',
+        collapsed: false,
+        items: [
+          { text: '项目架构', link: '/dev/architecture' },
+          { text: '插件开发', link: '/dev/plugin-dev' },
+          { text: '技能开发', link: '/dev/skill-dev' },
+          { text: '子代理开发', link: '/dev/sub-agent-dev' },
+          { text: '拓展开发', link: '/dev/expand-dev' },
+          { text: '感知开发', link: '/dev/sense-dev' }
+        ]
+      },
+      {
+        text: '原理',
+        collapsed: false,
+        items: [
+          { text: '运行原理', link: '/internals/runtime' },
+          { text: '系统提示词', link: '/internals/system-prompt' },
+          { text: '上下文管理', link: '/internals/context-management' },
+          { text: '工具调用', link: '/internals/tool-calling' },
+          { text: '记忆生命周期', link: '/internals/memory-lifecycle' },
+          { text: '消息路由', link: '/internals/message-routing' }
+        ]
+      }
+    ],
+    search: { provider: 'local' },
+    outline: { level: [2, 3], label: '本页目录' },
+    docFooter: { prev: '上一页', next: '下一页' },
+    lastUpdated: { text: '最后更新于', formatOptions: { dateStyle: 'medium', timeStyle: 'short' } },
+    returnToTopLabel: '返回顶部',
+    sidebarMenuLabel: '菜单',
+    darkModeSwitchLabel: '外观',
+    lightModeSwitchTitle: '切换到浅色模式',
+    darkModeSwitchTitle: '切换到深色模式',
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/kesepain-KE/kemo-agent' }
+    ],
+    footer: {
+      message: '基于 Apache License 2.0 开源',
+      copyright: 'Copyright © 2026 kemo-agent contributors'
+    }
+  }
+})
