@@ -9,7 +9,8 @@
 | `schema_version` | integer | `1` | 配置结构版本 |
 | `provider` | object | `kemo` | 主模型连接配置 |
 | `agent_models` | object | 空字符串 | 子代理三档模型，空值继承主模型 |
-| `multimodal_models` | object | 空字符串 | 多模态专用模型预留 |
+| `multimodal_models` | object | 空字符串 | 明确指定各能力的专用多模态模型 |
+| `multimodal_routing` | object | `vision: auto` | 图片在主模型与专用视觉模型之间的路由方式 |
 | `task_plan.auto_accept` | boolean | `false` | 是否自动批准新计划 |
 | `skills.shared_whitelist` | array | `[]` | 允许的共享技能，空数组表示全量 |
 | `expand.shared_whitelist` | array | `[]` | 允许的共享拓展 |
@@ -32,6 +33,9 @@
 | `model` | string | 空 | 主模型名 |
 | `stream` | boolean | `true` | 是否流式输出 |
 | `reasoning_effort` | string | `"medium"` | `minimal`、`low`、`medium`、`high`、`max` |
+| `input_modalities` | string[] | `["text"]` | 主模型确认支持的输入模态；必须包含 `text` |
+
+Chat 模式的 `input_modalities` 只允许 `text` 和 `image`；Kemo 模式还可声明 `audio`、`video`、`file`，实际使用时仍需满足网关能力。
 
 ## 模型档位
 
@@ -55,9 +59,20 @@
 | `multimodal_models.audio_transcription` | string | 空 | 语音转文字 |
 | `multimodal_models.speech_generation` | string | 空 | 文生语音 |
 | `multimodal_models.speech_to_speech` | string | 空 | 语音到语音 |
+| `multimodal_models.video_understanding` | string | 空 | 视频理解与时间轴摘要 |
 | `multimodal_models.video_generation` | string | 空 | 视频生成 |
 
-专用模型为空时使用 `provider.model`。这里不包含 embedding 和 rerank。
+专用模型为空时不会无条件改用 `provider.model`。主模型能否直接接收媒体由 `provider.input_modalities` 和 Kemo 网关能力决定；专用插件只调用明确填写的能力模型。这里不包含 embedding 和 rerank。
+
+图片路由配置：
+
+```json
+"multimodal_routing": {
+  "vision": "auto"
+}
+```
+
+`auto` 表示主模型支持图片时优先直传，否则使用 `multimodal_models.vision`；`main` 表示仅主模型；`dedicated` 表示仅专用视觉模型。Chat 模式只保证图片识别，音视频、普通文件和媒体生成/转换只在 Kemo 模式启用。
 
 ::: danger 密钥管理
 把 `provider.api_key` 留空并使用 `.env` 兜底通常更便于避免误提交。无论采用哪种方式，都不要把真实密钥纳入版本控制。

@@ -54,7 +54,34 @@ python start_web.py --host 127.0.0.1 --port 1357
 ## 更新
 
 ```bash
+python update.py --check
 python update.py
 ```
 
-更新前建议备份 `.env` 与整个 `users/` 目录。
+更新器支持 Windows 和 Linux，并按 `core`、`agents`、`plugins`、`web` 四个板块工作。只更新指定板块时可使用：
+
+```bash
+python update.py --module core
+python update.py --module agents
+python update.py --module plugins
+python update.py --module web
+```
+
+本地与远程版本相同时，交互模式会询问是否重新安装；输入 `y` 会按远程内容重新同步当前版本。也可以使用 `--force` 明确要求同版本重装，使用 `--dry-run` 预览操作。
+
+::: tip PowerShell 路径切换
+PowerShell 使用 `cd D:\kemo-agent` 或 `Set-Location D:\kemo-agent`。`cd /d ...` 是 `cmd.exe` 语法，不适用于 PowerShell。
+:::
+
+全量更新会先创建 `.backups/update-<时间>/`，再从刚克隆的远程源码加载最新更新板块。只有所有选中板块、用户骨架迁移、依赖刷新和 Web 构建全部成功后，才会原子提交新的 `version.json`。
+
+可以通过以下日志判断更新完成：
+
+- 板块汇总全部为 `[OK]`。
+- Web 更新未跳过时出现“Web 前端已构建”。
+- core 更新未跳过依赖时出现“依赖已刷新”。
+- 最终出现 `update complete`。
+
+出现 `failed`、`partial`、依赖安装失败或 Web 构建失败时，不算完成，版本号也不会推进。前端构建中的大分块提示属于体积警告，不等于构建失败。
+
+更新器备份不包含 `users/`。更新前仍应单独备份 `.env`、整个 `users/` 和自建的 `message/out/` 平台模块；自建可执行插件也应另行保存，因为 `plugins/` 会与远程完全同步。更新成功后重启 kemo-agent 使运行中的服务加载新代码。

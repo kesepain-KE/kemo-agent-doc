@@ -124,5 +124,5 @@
 | `runtime_host.enable_background_scheduler` | boolean | `true` | 启动统一后台调度器 |
 
 ::: warning 配置契约
-不要加入未知字段。当前 `provider`、`agent_models`、`multimodal_models`、`knowledge`、`skills`、`expand`、`perception` 和 `plugins` 属于用户专属配置，不应依赖全局兜底。
+不要加入未知字段。当前 `provider`、`agent_models`、`multimodal_models`、`multimodal_routing`、`knowledge`、`skills`、`expand`、`perception` 和 `plugins` 属于用户专属配置，不应依赖全局兜底。
 :::
