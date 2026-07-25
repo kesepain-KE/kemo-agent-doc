@@ -10,6 +10,7 @@
 | `provider_runtime` | object | `10` 个并发 | 全进程 Provider 并发与等待超时 |
 | `tools` | object | 启用，超时 240 秒 | 工具循环与重复调用保护 |
 | `history` | object | 最近完整 3 轮 | 历史保留和连续失败阈值 |
+| `history_summary` | object | 5 秒轮询，最多重试 5 次 | 已关闭会话的后台标题与摘要任务 |
 | `prompt` | object | 多段字符预算 | PromptBundle 截断与注入模式 |
 | `kemo_graph` | object | 全部关闭 | 图谱替换开关 |
 | `memory` | object | schema v3 | 记忆提取、注入和档位规则 |
@@ -82,7 +83,9 @@
 |---|---|---:|---|
 | `memory.storage_schema_version` | integer | `3` | 文件型记忆结构版本 |
 | `memory.extraction_mode` | string | `"compression_only"` | `disabled`、`compression_only`、`background` 或 `on_commit` |
-| `memory.recovery_max_rounds_per_scan` | integer | `2` | 单次恢复扫描最多处理轮数 |
+| `memory.recovery_max_rounds_per_scan` | integer | `10` | 单次恢复扫描最多补处理的轮数，运行时范围 1–20 |
+| `memory.extraction_batch_rounds` | integer | `5` | 一次模型分析最多处理的连续轮数，运行时范围 1–20 |
+| `memory.extraction_max_candidates_per_batch` | integer | `10` | 单批最多保留的候选记忆数，运行时硬上限 40 |
 | `memory.temporary_injection_limits.half_year` | integer | `100` | 半年层单次注入文件数上限 |
 | `memory.temporary_injection_limits.one_month` | integer | `200` | 一月层单次注入文件数上限 |
 | `memory.temporary_injection_limits.seven_days` | integer | `300` | 七天层单次注入文件数上限 |
@@ -112,7 +115,7 @@
 | 字段 | 类型 | 默认值 | 说明 |
 |---|---|---:|---|
 | `agent_runtime.queue_maxsize` | integer | `50` | 单用户子代理队列上限，`0` 表示无界 |
-| `agent_runtime.default_timeout` | integer | `600` | 子代理默认超时（秒） |
+| `agent_runtime.default_timeout` | integer | `600` | 子代理整体执行期限（秒）；到期后请求协作式取消 |
 | `task_plan.max_steps` | integer | `20` | 计划最大步骤数 |
 | `cron.enabled` | boolean | `true` | 启用 Cron 调度 |
 | `cron.poll_interval` | integer | `30` | 常规轮询间隔（秒） |
@@ -122,6 +125,19 @@
 | `task_cron_system.expand_update_rate` | integer | `5` | 拓展刷新间隔（秒） |
 | `task_cron_system.module_update_timeout` | integer | `120` | 单模块刷新子进程超时（秒） |
 | `runtime_host.enable_background_scheduler` | boolean | `true` | 启动统一后台调度器 |
+
+## 历史摘要后台任务
+
+历史摘要使用独立的持久后台调度，不占用 Web 请求线程，也不进入子代理内存队列。会话保存后即使关闭网页，只要 RuntimeHost 仍在运行，摘要任务就会继续处理。
+
+| 字段 | 类型 | 默认值 | 说明 |
+|---|---|---:|---|
+| `history_summary.poll_interval` | number | `5` | 持久摘要任务扫描间隔（秒） |
+| `history_summary.max_jobs_per_cycle` | integer | `1` | 每轮最多领取的摘要任务数 |
+| `history_summary.max_attempts` | integer | `5` | 自动尝试上限；耗尽后等待用户手动重试 |
+| `history_summary.retry_delays_seconds` | integer[] | `[30, 120, 600, 1800]` | 各次失败后的退避时间，超出数组后沿用最后一项 |
+
+Provider 拥塞或服务停止只会推迟任务，不消耗失败次数。长会话按块处理并保存断点，重启或失败后从最近成功位置继续。
 
 ::: warning 配置契约
 不要加入未知字段。当前 `provider`、`agent_models`、`multimodal_models`、`multimodal_routing`、`knowledge`、`skills`、`expand`、`perception` 和 `plugins` 属于用户专属配置，不应依赖全局兜底。

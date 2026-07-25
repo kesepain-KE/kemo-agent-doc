@@ -7,6 +7,7 @@
 ```text
 users/<user>/improve/
 ├── storage.json
+├── important_view.json
 ├── seven_days/   ── *.md + data.json
 ├── one_month/    ── *.md + data.json
 ├── half_year/    ── *.md + data.json
@@ -36,10 +37,12 @@ users/<user>/improve/
 
 所有入口共享连续 `memory_processed_round` 游标，避免保存、压缩和后台维护重复处理同一轮。
 
+待处理轮次按 `memory.extraction_batch_rounds` 组成连续批次，一次交给 `self_improve` 分析，并受 `memory.extraction_max_candidates_per_batch` 限制候选总数。候选会统一完成永久记忆匹配、去重和批量写入；每个批次使用稳定操作标识，只有成功落盘后才推进游标，因此失败重试不会重复创建或重复加权。
+
 ## 加权的成功条件
 
 实际注入 Prompt 的临时记忆只有在整轮成功提交后才调用 `mark_used`。正文确实修改和自我改进命中也可加权，但同一天合计最多 `+1`。失败、取消、单纯搜索命中或永久记忆都不参与加权。
 
 ::: danger 临时重要记忆
-`memory_temporary_important.md` 是独立维护的近期关注文件，任何情况下都不得删除、清空或写入空内容。
+`memory_temporary_important.md` 是由临时碎片生成的近期热画像，`important_view.json` 记录其来源。源碎片仍按原生命周期加权、到期和晋升；来源变化后旧视图会暂停注入，等待下次巡检重建。热画像任何情况下都不得删除、清空或写入空内容。
 :::

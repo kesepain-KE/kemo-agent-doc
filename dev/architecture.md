@@ -1,12 +1,12 @@
 # 项目架构
 
-kemo-agent 是事件驱动的多用户运行时。Web、CLI、消息和 Cron 最终都复用 `run/engine.py` 的请求链路与统一 `RunEvent`。
+kemo-agent 是事件驱动的多用户运行时。Web、CLI、消息和 Cron 最终都经过 `run/engine.py` 的稳定公共门面，并复用统一 `RunEvent`。
 
 ## 主要目录
 
 | 路径 | 职责 |
 |---|---|
-| `run/` | 对话引擎、上下文、历史、记忆、任务存储与运行时宿主 |
+| `run/` | 稳定引擎门面、对话编排、上下文、历史、记忆、任务存储与运行时宿主 |
 | `provider/` | Kemo 与 Chat Provider 适配 |
 | `plugins/` | 可执行工具及其 `SKILL.md` 清单 |
 | `agents/` | 内置子代理与受信任运行时 |
@@ -24,6 +24,7 @@ kemo-agent 是事件驱动的多用户运行时。Web、CLI、消息和 Cron 最
 
 ```text
 入口（Web / CLI / Message / Cron）
+  → run/engine.py 稳定公共门面
   → 加载全局默认与用户配置
   → 获取会话锁并准备历史工作区
   → 组装 PromptBundle 与工具注册表
@@ -33,6 +34,24 @@ kemo-agent 是事件驱动的多用户运行时。Web、CLI、消息和 Cron 最
 ```
 
 `RuntimeHost` 统一托管 Web 之外的后台组件，包括 Cron、消息路由和维护调度。
+
+## 运行模块职责
+
+`run/engine.py` 保留对外兼容入口，主循环由 `conversation_runtime.py` 负责。其余领域模块按职责拆分：
+
+| 模块 | 职责 |
+|---|---|
+| `context_service.py` | 上下文选择、压缩与重试 |
+| `request_input.py` | 请求与附件输入准备 |
+| `provider_events.py` | Provider 事件归一化 |
+| `run_state.py` | 单轮运行状态与终态信息 |
+| `round_finalizer.py` | 成功、失败和取消的提交边界 |
+| `session_runtime.py` | 会话锁与运行会话辅助 |
+| `memory_analysis.py` | 记忆候选批处理与持久化编排 |
+| `usage.py` | 用量累计与展示数据 |
+| `errors.py` | 稳定运行时异常类型 |
+
+拆分不改变调用方入口，目的是让状态、上下文、记忆和终态提交各自保持清晰边界。
 
 ## 状态边界
 
