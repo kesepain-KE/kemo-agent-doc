@@ -7,8 +7,13 @@
 ```text
 plugins/my_tool/
 ├── SKILL.md
-└── tool.py
+├── tool.py
+├── src/           # 可选
+├── references/    # 可选
+└── assets/        # 可选
 ```
+
+目录只规定清单和清单声明的入口，不限制实现规模。插件既可以是单文件工具，也可以包含完整 Python 包、协议定义、静态资源和第三方工程；只有 `SKILL.md` 的 `entrypoint` 会被工具注册器调用。
 
 ## SKILL.md 清单
 

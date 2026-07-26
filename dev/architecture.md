@@ -30,7 +30,8 @@ kemo-agent 是事件驱动的多用户运行时。Web、CLI、消息和 Cron 最
   → 组装 PromptBundle 与工具注册表
   → 选择上下文并按需摘要
   → Provider ↔ 工具循环
-  → 成功提交归档、记忆加权与提取游标
+  → 提交 completed / cancelled / failed 终态
+  → 成功轮次执行记忆加权与提取游标
 ```
 
 `RuntimeHost` 统一托管 Web 之外的后台组件，包括 Cron、消息路由和维护调度。
@@ -46,6 +47,9 @@ kemo-agent 是事件驱动的多用户运行时。Web、CLI、消息和 Cron 最
 | `provider_events.py` | Provider 事件归一化 |
 | `run_state.py` | 单轮运行状态与终态信息 |
 | `round_finalizer.py` | 成功、失败和取消的提交边界 |
+| `attachments.py` | Web、消息和工具路径的 Run 资产解析与媒体验证 |
+| `expand_runtime.py` | 拓展发现、隔离调用、产物发布与运行诊断 |
+| `module_runtime.py` | 感知/拓展模块锁、子进程协议和进程树回收 |
 | `session_runtime.py` | 会话锁与运行会话辅助 |
 | `memory_analysis.py` | 记忆候选批处理与持久化编排 |
 | `usage.py` | 用量累计与展示数据 |

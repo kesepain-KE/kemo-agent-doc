@@ -11,8 +11,13 @@ agents/my_agent/
 ├── agent-config.json
 ├── trigger.md
 ├── executor.py        # 可选
-└── schema.json        # 可选
+├── schema.json        # 可选
+├── prompts/           # 可选
+├── src/               # 可选
+└── assets/            # 可选
 ```
+
+这些是框架识别的边界文件，不是目录上限。子代理可以在自身目录内组织任意模块、提示词片段、数据和测试，甚至包装完整工程；运行时只自动读取清单声明和约定入口。
 
 精简 `agent.json` 只包含 `name`、`version`、`description`、`trigger`：
 

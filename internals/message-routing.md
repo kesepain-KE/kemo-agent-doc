@@ -33,7 +33,7 @@ message/out/<platform>/input.py
 
 ## 附件转换
 
-图片、音频和 PDF 变为 Kemo 内容块，文本文件读入提示词，视频和未知类型只提供文件说明。附件必须位于平台插件声明的 `files_dir` 中。
+附件必须带非空插件相对路径并位于平台声明的 `files_dir` 中。路由先把它们登记为带来源、校验和、媒体类型的当前 Run 资产；文本文件可并入提示词，图片再由主模型能力声明和多模态路由决定直传或专用模型处理，其他媒体按 Provider 协议能力处理。平台适配器不直接替主模型选择模态路线。
 
 ## 完成与清理
 
@@ -42,6 +42,8 @@ RouteResult 到达终态后调用可选 `finalize()`。文件 Transport 用它�
 ## 并发
 
 同一 `(user, source, session_id)` 最终仍受引擎会话锁串行保护。消息层还有工作线程和等待队列上限；超出容量时明确返回 `MessageQueueFullError`。
+
+文件夹插件还运行独立 input 监督线程，不与消息文件轮询共用阻塞循环。模块实现 `is_alive()` 时以该探针判断健康；只实现阻塞式 `start()` 的旧模块以框架输入线程判断。输入死亡后按指数退避调用 `restart()`，或回退到 `stop()` 后重新 `start()`；旧线程未退出时拒绝启动第二个消费者。RuntimeHost 停止期间监督线程不会重新拉起平台连接。
 
 ::: warning 文件插件代码
 RuntimeHost 只加载 `message.json` 声明的 input、output 和 detect 模块。不要把未审查代码放进这些入口。

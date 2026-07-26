@@ -9,7 +9,7 @@
 | 共享 | `shared_skills/<name>/` | 被主配置允许的所有用户 |
 | 用户 | `users/<user>/user_skills/` | 当前用户 |
 
-一个技能唯一必需文件是 `SKILL.md`，可附带 `references/`、`scripts/` 和 `assets/`。
+一个技能唯一必需文件是 `SKILL.md`，其余内部结构完全开放。可附带 `references/`、`scripts/`、`assets/`、模板、示例项目或其他任意目录；这些名称只是常见约定，不是允许列表。只有 `SKILL.md` 会被自动发现，其他资源必须由说明明确引导智能体按需读取或执行。
 
 ## 基本写法
 

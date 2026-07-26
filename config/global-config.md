@@ -139,6 +139,8 @@
 
 Provider 拥塞或服务停止只会推迟任务，不消耗失败次数。长会话按块处理并保存断点，重启或失败后从最近成功位置继续。
 
+每个历史摘要块按估算 Token 控制在 24000 以内，单轮内容本身过大时继续拆分。模型调用最大输出预算为 10000 Token，并优先使用结构化输出工具；非标准文本经过恢复和本地兜底后仍可完成卡片标题与摘要。
+
 ::: warning 配置契约
 不要加入未知字段。当前 `provider`、`agent_models`、`multimodal_models`、`multimodal_routing`、`knowledge`、`skills`、`expand`、`perception` 和 `plugins` 属于用户专属配置，不应依赖全局兜底。
 :::
