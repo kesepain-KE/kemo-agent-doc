@@ -25,6 +25,14 @@
 
 拓展操控由 `expand_call` 在隔离子进程中调用 `execute(command, params)`。结构化结果直接回到当前工具循环，不经过 `input_data.md`；图片、音视频、日志和其他大型结果通过 `artifacts` 返回，验证后复制到当前用户的 `download`。隔离子进程用于生命周期和进程树回收，不是操作系统权限沙箱，因此只能启用受信任模块。
 
+## 内置 Kemo 网关状态拓展
+
+`global_expand/kemo_gateway_status/` 是默认未激活的内置全局拓展。它只读调用 Kemo Gateway
+`GET /status`，使用独立 `STATUS_TOKEN` 生成脱敏状态摘要和 PNG 图表。用户未明确激活时不会连接
+网关或注入状态；`deactivate` 只删除本地配置与产物，不会修改网关。
+
+具体配置、命令与故障排查见[接入 Kemo Gateway](/guide/kemo-gateway#网关运行状态拓展)。
+
 ::: tip 如何选择
 只需要把环境状态提供给智能体时使用感知；需要对外部系统执行操作时使用拓展；只提供工作方法和说明时更适合技能。
 :::
