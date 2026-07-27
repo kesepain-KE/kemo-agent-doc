@@ -40,4 +40,3 @@ python3 update.py --module all
 ```
 
 更新完成后完整重启 kemo-agent。若要启用网关状态拓展，还需要在 Kemo Gateway 配置独立 `STATUS_TOKEN`、重启网关，再由主智能体执行激活；仅升级 kemo-agent 不会自动启用该拓展。
-
