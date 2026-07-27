@@ -30,7 +30,7 @@ export default defineConfig({
         collapsed: false,
         items: [
           { text: '关于 kemo-agent', link: '/guide/what-is-kemo-agent' },
-          { text: 'v0.4.0 更新说明', link: '/guide/release-0.4.0' },
+          { text: 'v0.5.0 更新说明', link: '/guide/release-0.5.0' },
           { text: '快速开始', link: '/guide/getting-started' },
           { text: '安装部署', link: '/guide/installation' },
           { text: '首次运行', link: '/guide/first-run' }
@@ -83,7 +83,8 @@ export default defineConfig({
           { text: '上下文管理', link: '/internals/context-management' },
           { text: '工具调用', link: '/internals/tool-calling' },
           { text: '记忆生命周期', link: '/internals/memory-lifecycle' },
-          { text: '消息路由', link: '/internals/message-routing' }
+          { text: '消息路由', link: '/internals/message-routing' },
+          { text: '结构化运行日志', link: '/internals/runtime-logs' }
         ]
       }
     ],

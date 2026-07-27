@@ -21,6 +21,12 @@
 | `HTTPS_PROXY` | URL | 空 | HTTPS 代理，空时直连 |
 | `TAVILY_API_KEY` | string | 空 | `web_search` 插件密钥；为空时工具仍可发现，调用时返回配置提示且不发起网络请求 |
 
+## 运行日志
+
+| 变量 | 类型 | 默认值 | 说明 |
+|---|---|---:|---|
+| `KEMO_LOG_RETENTION_DAYS` | integer | `90` | SQLite 结构化 Cron/消息日志保留天数；`0` 表示不自动清理。旧 JSONL/Markdown 兼容日志不会由该参数删除 |
+
 TLS 始终使用系统默认验证策略，没有关闭证书验证的环境变量。
 
 ## Web 服务

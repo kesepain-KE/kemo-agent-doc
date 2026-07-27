@@ -15,6 +15,7 @@ kemo-agent 是事件驱动的多用户运行时。Web、CLI、消息和 Cron 最
 | `web/` | Python API 与 React/Vite 前端 |
 | `config/` | 全局配置和安全底线 |
 | `users/` | 用户独立配置、历史、记忆、知识、任务和文件 |
+| `runtime/` | 自动生成的 SQLite 结构化运行日志，不纳入 Git |
 | `global_knowledge/` / `shared_knowledge/` | 分层知识 |
 | `global_sense/` | 全局感知模块 |
 | `global_expand/` / `shared_expand/` | 全局与共享拓展 |
@@ -54,6 +55,7 @@ kemo-agent 是事件驱动的多用户运行时。Web、CLI、消息和 Cron 最
 | `memory_analysis.py` | 记忆候选批处理与持久化编排 |
 | `usage.py` | 用量累计与展示数据 |
 | `errors.py` | 稳定运行时异常类型 |
+| `log_store.py` | Cron 与外部消息结构化日志、旧文件迁移和保留策略 |
 
 拆分不改变调用方入口，目的是让状态、上下文、记忆和终态提交各自保持清晰边界。
 

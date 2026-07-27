@@ -58,6 +58,8 @@
 | `agents.important_memory_review_hours` | number | `3` | 临时重要记忆巡检间隔 |
 | `agents.daily_memory_review_time` | string | `"02:00"` | 每日记忆整理时间 |
 
+`context_manage` 的摘要输入会合并正文、reasoning/think 与工具结论，核心运行时为每次摘要请求提供最多 20000 tokens 的输出预算。`important_memory_review_hours` 和 `daily_memory_review_time` 是宿主级调度字段，只能从全局配置创建统一系统时间表，不能在用户配置中建立不同的用户级时间表。
+
 ## PromptBundle
 
 | 字段 | 类型 | 默认值 | 说明 |

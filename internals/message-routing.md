@@ -37,7 +37,7 @@ message/out/<platform>/input.py
 
 ## 完成与清理
 
-RouteResult 到达终态后调用可选 `finalize()`。文件 Transport 用它写入 `log/YYYY-MM-DD.md`、删除本批次已处理附件，并释放队列领取文件。处理状态和多键幂等避免重启或合批造成重复回复。
+RouteResult 到达终态后调用可选 `finalize()`。文件 Transport 用它把入站、出站、附件和失败状态双写到 `runtime/logs.sqlite3` 与 `log/YYYY-MM-DD.md`，再删除本批次已处理附件并释放队列领取文件。SQLite 使用事件指纹去重；处理状态和多键幂等避免重启或合批造成重复回复。
 
 ## 并发
 
