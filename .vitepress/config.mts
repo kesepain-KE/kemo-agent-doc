@@ -30,6 +30,7 @@ export default defineConfig({
         collapsed: false,
         items: [
           { text: '关于 kemo-agent', link: '/guide/what-is-kemo-agent' },
+          { text: 'v0.7.1 更新说明', link: '/guide/release-0.7.1' },
           { text: 'v0.7.0 更新说明', link: '/guide/release-0.7.0' },
           { text: 'v0.6.0 更新说明', link: '/guide/release-0.6.0' },
           { text: 'v0.5.0 更新说明', link: '/guide/release-0.5.0' },
