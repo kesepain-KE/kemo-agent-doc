@@ -30,14 +30,21 @@ export default defineConfig({
         collapsed: false,
         items: [
           { text: '关于 kemo-agent', link: '/guide/what-is-kemo-agent' },
-          { text: 'v0.7.1 更新说明', link: '/guide/release-0.7.1' },
-          { text: 'v0.7.0 更新说明', link: '/guide/release-0.7.0' },
-          { text: 'v0.6.0 更新说明', link: '/guide/release-0.6.0' },
-          { text: 'v0.5.0 更新说明', link: '/guide/release-0.5.0' },
           { text: '快速开始', link: '/guide/getting-started' },
           { text: '安装部署', link: '/guide/installation' },
           { text: '首次运行', link: '/guide/first-run' },
           { text: 'Kemo 网关接入', link: '/guide/kemo-gateway' }
+        ]
+      },
+      {
+        text: '更新说明',
+        collapsed: false,
+        items: [
+          { text: 'v0.7.1 更新说明', link: '/releases/release-0.7.1' },
+          { text: 'v0.7.0 更新说明', link: '/releases/release-0.7.0' },
+          { text: 'v0.6.0 更新说明', link: '/releases/release-0.6.0' },
+          { text: 'v0.5.0 更新说明', link: '/releases/release-0.5.0' },
+          { text: 'v0.4.0 更新说明', link: '/releases/release-0.4.0' }
         ]
       },
       {
