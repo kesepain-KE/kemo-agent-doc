@@ -206,13 +206,13 @@ HTTP 重定向，避免把 Token 发送到配置地址之外的主机。
 
 ## 当前能力边界
 
-Kemo Gateway `0.6.0` 已提供 LLM、Embedding、Rerank、模型发现和能力声明接口，但 kemo-agent
-主 Provider 的自动模型目录使用 `task=llm`，不会把 Embedding 或 Rerank 模型当作对话模型。
+Kemo Gateway `0.7.0` 已提供 LLM、Embedding、Rerank、模型发现、能力声明和 Asset API 接口，
+但 kemo-agent 主 Provider 的自动模型目录使用 `task=llm`，不会把 Embedding 或 Rerank 模型当作对话模型。
 
-图片、音频、视频、普通文件、媒体生成、Asset、Provider State 和流恢复属于可扩展协议范围，
+图片、音频、视频、普通文件、媒体生成、Provider State 和流恢复属于可扩展协议范围，
 但不能仅凭 `provider.type=kemo` 就视为可用。只有当前网关已经实现对应公开接口、目标 Provider
-明确声明能力、且模型通过真实验证时才能启用。网关 `0.6.0` 尚不保证完整 Asset API、Provider
-State 服务或完整流恢复。
+明确声明能力、且模型通过真实验证时才能启用。Asset 上传与检索在 `0.7.0` 已可用；
+Provider State 服务或完整流恢复在 `0.7.0` 仍不保证。
 
 ## 常见问题
 

@@ -78,6 +78,7 @@ Provider 单次请求超时由源码固定为 120 秒，用户配置不接受 `t
 
 图片分析、音频转写和视频分析在 408、429、5xx 或 Provider 明确标记为可重试的瞬时错误下最多补试一次。图片/音视频生成与编辑不会自动重试，避免重复计费。专用多模态调用最大输出预算为 10000 Token，但这是思考与正文共享的总预算，框架不能保证为正文硬性保留固定份额。
 
-Kemo Gateway `0.6.0` 尚不保证完整 Asset API、Provider State 服务或完整流恢复。不要只因
-`provider.type=kemo` 就启用这些能力，应以网关能力接口和目标 Provider 的真实声明为准。
+Kemo Gateway `0.7.0` 已支持 Asset 上传与检索（`POST /v1/assets`、`GET /v1/assets/{id}`），
+但 Provider State 和流恢复仍可能受限。不要只因 `provider.type=kemo` 就启用未实现的能力，
+应以网关能力接口和目标 Provider 的真实声明为准。
 :::

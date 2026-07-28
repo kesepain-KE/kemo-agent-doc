@@ -14,7 +14,7 @@
 | `OPENAI_MODEL` | string | 空 | Chat 模式模型兜底 |
 
 ::: warning Kemo Gateway 默认端口
-kemo-agent 当前仍保留 `8741` 作为历史内置兜底值，而 Kemo Gateway `0.6.0` 默认监听
+kemo-agent 当前仍保留 `8741` 作为历史内置兜底值，而 Kemo Gateway 默认监听
 `http://127.0.0.1:7531`。连接当前网关时应在 `.env` 或用户配置中显式填写
 `http://127.0.0.1:7531`，且不要附加 `/v1` 或具体接口路径。完整步骤见
 [接入 Kemo Gateway](/guide/kemo-gateway)。
