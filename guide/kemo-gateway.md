@@ -241,7 +241,9 @@ Provider State 服务或完整流恢复在 `0.8.0` 仍不保证。
 Kemo Gateway 管理端在 `0.8.0` 进行了全面安全加固：
 
 - **会话管理**：浏览器登录后使用 HttpOnly + SameSite=Strict Cookie，前端不再保存 Bearer Token
-- **密钥脱敏**：API 密钥列表只返回安全掩码，完整调用密钥不再回传浏览器
+- **密钥脱敏**：API 密钥列表只返回安全掩码，完整调用密钥不再回传浏览器。
+  通过 Eye 按钮可短暂查看完整密钥 8 秒，或一键复制到剪贴板——每次操作都需 owner 权限
+  并经过独立 POST 端点确认，不会在列表或网络日志中泄漏明文。
 - **凭据保护**：Provider 请求头值（如 `X-API-Key`、`Authorization`）不在管理界面显示
 - **Web Token**：禁止放入 URL，只能在登录表单中提交
 
