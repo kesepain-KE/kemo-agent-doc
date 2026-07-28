@@ -44,7 +44,10 @@ export default defineConfig({
           { text: 'v0.7.0 更新说明', link: '/releases/release-0.7.0' },
           { text: 'v0.6.0 更新说明', link: '/releases/release-0.6.0' },
           { text: 'v0.5.0 更新说明', link: '/releases/release-0.5.0' },
-          { text: 'v0.4.0 更新说明', link: '/releases/release-0.4.0' }
+          { text: 'v0.4.0 更新说明', link: '/releases/release-0.4.0' },
+          { text: 'v0.3.0 更新说明', link: '/releases/release-0.3.0' },
+          { text: 'v0.2.0 更新说明', link: '/releases/release-0.2.0' },
+          { text: 'v0.1.0 更新说明', link: '/releases/release-0.1.0' }
         ]
       },
       {
