@@ -154,7 +154,7 @@ Provider 不执行工具；kemo-agent 也不会绕过网关能力声明猜测模
 
 ## 网关运行状态拓展
 
-kemo-agent `v0.6.0` 内置全局拓展 `global_expand/kemo_gateway_status/`，用于消费网关公开的只读
+kemo-agent 自 `v0.6.0` 起内置全局拓展 `global_expand/kemo_gateway_status/`，用于消费网关公开的只读
 `GET /status`。它与主 Provider 的模型调用链路相互独立，默认未激活；安装、拉取或更新
 kemo-agent 不会自动连接网关。
 

@@ -21,6 +21,22 @@ kemo-agent 是事件驱动的多用户运行时。Web、CLI、消息和 Cron 最
 | `global_expand/` / `shared_expand/` | 全局与共享拓展 |
 | `template/` | 用户、代理、技能、拓展、感知和任务骨架 |
 
+## Web 后端分层
+
+Web 后端按“应用装配—路由—领域服务—公共契约”组织，避免把全部 API、文件操作和业务规则集中在单个上帝模块中：
+
+| 路径 | 职责 |
+|---|---|
+| `web/app.py` | 创建 FastAPI 应用、装配共享运行时并注册路由；保留聊天流等核心入口 |
+| `web/routes/` | 按 identity、sessions、files、modules、settings、tasks 等功能域声明 HTTP 路由 |
+| `web/service.py` | 对外兼容门面、聊天相关核心服务和既有测试兼容入口 |
+| `web/services/` | 文件、用户、知识、记忆、模块、技能、任务和运行状态等领域实现 |
+| `web/schemas.py` | Web 请求与响应的数据模型 |
+| `web/errors.py` | Web 层稳定异常类型与错误边界 |
+| `web/constants.py` | 上传、预览、技能归档等共享限制和类型映射 |
+
+路由层只处理 HTTP 输入输出，领域服务不依赖具体页面。原有调用方仍可通过兼容门面工作，因此此次拆分不改变公开 API 路径。
+
 ## 主调用链
 
 ```text
