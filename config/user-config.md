@@ -32,10 +32,15 @@
 | `api_key_env` | string | 空 | 自定义密钥环境变量名 |
 | `model` | string | 空 | 主模型名 |
 | `stream` | boolean | `true` | 是否流式输出 |
-| `reasoning_effort` | string | `"medium"` | `minimal`、`low`、`medium`、`high`、`max` |
+| `reasoning_effort` | string | `"medium"` | Chat 使用原有固定档位；Kemo 使用当前模型能力声明中的逻辑档位，可包含 `xhigh` |
 | `input_modalities` | string[] | `["text"]` | 主模型确认支持的输入模态；必须包含 `text` |
 
 Chat 模式的 `input_modalities` 只允许 `text` 和 `image`；Kemo 模式还可声明 `audio`、`video`、`file`，实际使用时仍需满足网关能力。
+
+Kemo 模式下，配置文件只保存所选逻辑档位，不保存模型能力或厂商映射。运行前框架会查询当前
+模型能力；如果档位已经失效，则优先改用 `medium`，没有 `medium` 时使用能力列表第一项。
+模型声明不支持推理、能力列表为空或首次查询失败且没有成功缓存时，本次调用不提交推理配置。
+Chat 模式保持原有行为，不访问 Kemo 能力接口。
 
 ## 模型档位
 

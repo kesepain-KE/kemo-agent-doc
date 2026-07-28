@@ -13,7 +13,8 @@
 ```text
 kemo-agent
   ├─ GET  /model/models?task=llm              获取当前密钥可用模型
-  ├─ GET  /model/capabilities?model=...       读取模型能力
+  ├─ GET  <catalog.capabilities_url>           读取所选模型能力
+  │          └─ /model/capabilities?model=...  旧路径兼容
   └─ POST /model/responses                    文本、流式与工具调用
               │
               ▼
@@ -133,6 +134,27 @@ X-Kemo-Protocol-Version: 1.0
 
 因此“网关注册了模型”不代表每个密钥都能看到它。`chat` 模式、未保存配置、凭据缺失、鉴权
 失败或响应协议无效时，框架一律不拉取模型，也不会退回未经验证的静态列表。
+
+## 动态思考能力
+
+模型目录中的每个 LLM 条目可以提供自己的 `capabilities_url`。kemo-agent 优先访问该地址，并
+校验它仍与已配置的网关同源，避免把 Bearer 密钥发送到目录声明的外部地址；目录未提供时才
+使用旧接口：
+
+```http
+GET /model/capabilities?model=<model>
+Authorization: Bearer <gateway-key>
+X-Kemo-Protocol-Version: 1.0
+```
+
+响应的 `reasoning.supported` 和 `reasoning.efforts` 决定界面实际显示哪些思考档位。客户端只
+提交用户选择的 Kemo 逻辑档位，不使用 `reasoning_effort_map` 自行替换成厂商档位。例如能力
+声明 `max → high` 时，请求仍提交 `max`，实际转换由网关 Provider 完成。
+
+当 `reasoning_policy.mode=mapped` 或 `collapsed=true` 时，界面只作解释性提示，不删除合法
+档位。模型不支持推理时，主对话和子代理都不会发送 `reasoning`；能力接口失败且没有历史成功
+缓存时也不会假定模型支持固定五档。能力声明表示协议能力，不代表上游此刻一定可达，实时 400、
+限流和网络错误仍应按 Provider 调用故障排查。
 
 ## 文本、流式和工具调用
 

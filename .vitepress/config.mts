@@ -40,6 +40,7 @@ export default defineConfig({
         text: '更新说明',
         collapsed: false,
         items: [
+          { text: 'v0.8.0 更新说明', link: '/releases/release-0.8.0' },
           { text: 'v0.7.1 更新说明', link: '/releases/release-0.7.1' },
           { text: 'v0.7.0 更新说明', link: '/releases/release-0.7.0' },
           { text: 'v0.6.0 更新说明', link: '/releases/release-0.6.0' },
@@ -85,7 +86,8 @@ export default defineConfig({
           { text: '技能开发', link: '/dev/skill-dev' },
           { text: '子代理开发', link: '/dev/sub-agent-dev' },
           { text: '拓展开发', link: '/dev/expand-dev' },
-          { text: '感知开发', link: '/dev/sense-dev' }
+          { text: '感知开发', link: '/dev/sense-dev' },
+          { text: '模块合同验收', link: '/dev/template-validation' }
         ]
       },
       {

@@ -50,6 +50,24 @@ Kemo 公开模型名固定为 `<provider_id>-<厂商原始模型名>`。Web 设�
 `kemo` 且 API 鉴权有效时请求 `/model/models?task=llm`；`chat`、未保存草稿或无效凭据不会触发
 模型拉取。目录结果还会应用当前密钥的 scope、模型白名单和 Provider/模型启停状态。
 
+## Kemo 动态思考档位
+
+选择 Kemo 模型后，Web 设置页和聊天页顶部模型卡片会读取该模型的能力声明。客户端优先使用
+模型目录条目给出的 `capabilities_url`，缺失时兼容
+`GET /model/capabilities?model=<model>`。思考选项完全来自
+`reasoning.efforts`，可能包含 `minimal`、`low`、`medium`、`high`、`xhigh` 或 `max` 中由当前
+模型实际声明的子集；框架不会根据模型名称猜测，也不会在客户端执行厂商档位映射。
+
+- `reasoning.supported=false` 或 `efforts=[]`：禁用档位选择，运行时不提交 `reasoning` 参数；
+- 已保存档位不再可用：优先回退到 `medium`，否则使用声明列表第一项；
+- `extensions.reasoning_policy.collapsed=true`：界面提示多个逻辑档位可能映射为同一上游强度，
+  但仍提交用户选择的 Kemo 逻辑档位；
+- 能力暂时刷新失败：可以显示上一次成功缓存并明确标记警告；没有可用缓存时不会静默假定五档；
+- Base URL、API Key 或模型变化后：按新身份重新查询，模型目录刷新也会清理已经移除模型的缓存。
+
+这套规则同时用于主对话和子代理。`chat` 协议不请求 Kemo 模型能力接口，仍使用原有固定档位
+和兼容请求链路。
+
 ## Chat 兼容示例
 
 ```json

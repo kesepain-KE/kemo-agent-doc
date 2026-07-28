@@ -20,6 +20,7 @@ kemo-agent 是事件驱动的多用户运行时。Web、CLI、消息和 Cron 最
 | `global_sense/` | 全局感知模块 |
 | `global_expand/` / `shared_expand/` | 全局与共享拓展 |
 | `template/` | 用户、代理、技能、拓展、感知和任务骨架 |
+| `tests/template_tests/` | 按资源类型拆分的创建结果入口/出口合同验收基准 |
 
 ## Web 后端分层
 
