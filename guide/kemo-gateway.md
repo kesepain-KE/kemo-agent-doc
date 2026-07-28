@@ -228,13 +228,27 @@ HTTP 重定向，避免把 Token 发送到配置地址之外的主机。
 
 ## 当前能力边界
 
-Kemo Gateway `0.7.0` 已提供 LLM、Embedding、Rerank、模型发现、能力声明和 Asset API 接口，
+Kemo Gateway `0.8.0` 已提供 LLM、Embedding、Rerank、模型发现、能力声明和 Asset API 接口，
 但 kemo-agent 主 Provider 的自动模型目录使用 `task=llm`，不会把 Embedding 或 Rerank 模型当作对话模型。
 
 图片、音频、视频、普通文件、媒体生成、Provider State 和流恢复属于可扩展协议范围，
 但不能仅凭 `provider.type=kemo` 就视为可用。只有当前网关已经实现对应公开接口、目标 Provider
-明确声明能力、且模型通过真实验证时才能启用。Asset 上传与检索在 `0.7.0` 已可用；
-Provider State 服务或完整流恢复在 `0.7.0` 仍不保证。
+明确声明能力、且模型通过真实验证时才能启用。Asset 上传与检索在 `0.8.0` 已可用；
+Provider State 服务或完整流恢复在 `0.8.0` 仍不保证。
+
+### 网关管理端安全 (0.8.0)
+
+Kemo Gateway 管理端在 `0.8.0` 进行了全面安全加固：
+
+- **会话管理**：浏览器登录后使用 HttpOnly + SameSite=Strict Cookie，前端不再保存 Bearer Token
+- **密钥脱敏**：API 密钥列表只返回安全掩码，完整调用密钥不再回传浏览器
+- **凭据保护**：Provider 请求头值（如 `X-API-Key`、`Authorization`）不在管理界面显示
+- **Web Token**：禁止放入 URL，只能在登录表单中提交
+
+这些变更不影响 kemo-agent 的模型调用链路（仍使用 Bearer Token），但如果你通过浏览器管理
+网关，登录方式和安全边界已经改变。公网部署时需要同时配置 `WEB_TOKEN`、`WEB_USERNAME`、
+`WEB_PASSWORD`，通过反向代理提供 HTTPS，并设置 `WEB_ALLOWED_HOSTS`。详见
+[网关 README](https://github.com/kesepain-KE/kemo-adapter-api/blob/main/README.md)。
 
 ## 常见问题
 
