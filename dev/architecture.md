@@ -62,6 +62,8 @@ Web 后端按“应用装配—路由—领域服务—公共契约”组织，�
 |---|---|
 | `context_service.py` | 上下文选择、压缩与重试 |
 | `request_input.py` | 请求与附件输入准备 |
+| `guidance.py` | 当前 Run 与下一轮之间的引导邮箱和结构化信封 |
+| `guidance_runtime.py` | 引导附件二次验证、能力路由与 Provider 消息准备 |
 | `provider_events.py` | Provider 事件归一化 |
 | `run_state.py` | 单轮运行状态与终态信息 |
 | `round_finalizer.py` | 成功、失败和取消的提交边界 |
