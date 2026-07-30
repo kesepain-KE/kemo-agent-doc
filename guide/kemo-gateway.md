@@ -236,6 +236,20 @@ Kemo Gateway `0.7.1` 已提供 LLM、Embedding、Rerank、模型发现、能力�
 明确声明能力、且模型通过真实验证时才能启用。Asset 上传与检索在 `0.7.0` 已可用；
 Provider State 服务或完整流恢复在 `0.7.1` 仍不保证。
 
+### 传输稳定性增强（0.7.1+）
+
+当前 Kemo Gateway 在生产中默认启用以下传输稳定性特性：
+
+**SSE 心跳**：流空闲时每 15 秒发送注释心跳（`: kemo-heartbeat\n\n`）。心跳不推进协议 sequence，仅保持代理/CDN/隧道连接活跃。可通过 `SSE_HEARTBEAT_SECONDS` 环境变量调整。
+
+**持久化执行存储**：幂等记录、响应终态和 SSE 事件持久化到 SQLite WAL 数据库 `storage/executions/executions.sqlite3`。连接断开后，客户端可使用相同请求正文、`request_id` 和 `Last-Event-ID` 从下一事件续传。默认保留 24 小时（`EXECUTION_RETENTION_HOURS`）。
+
+**执行超时与并发上限**：LLM、Embedding 和 Rerank 受 `MODEL_EXECUTION_TIMEOUT_SECONDS`（默认 900 秒）核心时限保护，超时返回 `GATEWAY_TIMEOUT`。单进程并行执行上限为 `MAX_CONCURRENT_EXECUTIONS`（默认 64），超过时返回 503 `GATEWAY_OVERLOADED`。
+
+**Producer 隔离**：调用方取消不会杀死已在运行的 Provider 上游执行，网关进程重启后未结束的执行被确定性终结为 `incomplete/gateway_restarted`。
+
+详细边界与超时/容量/错误码/续传规则见 [公开 API 文档](https://github.com/kesepain-KE/kemo-adapter-api/blob/main/api.md)。
+
 ### 网关管理端安全（0.7.1）
 
 Kemo Gateway 管理端在 `0.7.1` 延续安全管理边界，并补充了稳定性与多入口部署处理：
