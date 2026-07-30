@@ -252,6 +252,14 @@ Kemo Gateway 管理端在 `0.8.0` 进行了全面安全加固：
 `WEB_PASSWORD`，通过反向代理提供 HTTPS，并设置 `WEB_ALLOWED_HOSTS`。详见
 [网关 README](https://github.com/kesepain-KE/kemo-adapter-api/blob/main/README.md)。
 
+## 重启交接与延迟指标补充
+
+网关更新后的重启会先请求旧实例优雅退出，再由独立 replacement 进程等待旧 PID 与监听端口释放。只有 PID 文件中的 `pid` 和 `instance_id` 仍对应同一旧实例时，replacement 才会在超时后升级终止，避免 PID 被系统复用时误伤其他进程。重启时会重新读取当前 `.env`：已从文件删除的旧变量不会继承到新实例，显式进程环境覆盖仍保留。
+
+管理端与状态拓展中的“响应延迟”现在指从网关接收请求到第一个 Provider 响应事件到达的时间；完整执行至终态的耗时作为独立 `duration_ms` 保留在调用日志中。流式请求的首个文本、音频、推理、工具或终态事件都可以标记首响应。旧统计 SQLite 数据库会在读取时自动补齐相关列。
+
+`WEB_COOKIE_SECURE=auto` 按当前管理请求实际使用的 HTTP/HTTPS scheme 决定 Secure 属性，而不是只依据 `GATEWAY_BASE_URL`。因此同一网关可同时通过公网 HTTPS 与可信局域网 HTTP 访问；公网反向代理应正确传递 `X-Forwarded-Proto`，公网入口仍建议配置 `WEB_TOKEN`、用户名密码、HTTPS 与 `WEB_ALLOWED_HOSTS`。
+
 ## 常见问题
 
 | 现象 | 优先检查 |
