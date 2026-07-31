@@ -67,6 +67,7 @@ export default defineConfig({
           { text: '定时任务', link: '/usage/cron-tasks' },
           { text: '子代理', link: '/usage/sub-agents' },
           { text: '感知与拓展', link: '/usage/sense-expand' },
+          { text: '图谱与检索知识层', link: '/usage/kemo-graph' },
           { text: '消息平台接入', link: '/usage/message-platform' }
         ]
       },
