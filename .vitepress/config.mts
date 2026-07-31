@@ -33,7 +33,8 @@ export default defineConfig({
           { text: '快速开始', link: '/guide/getting-started' },
           { text: '安装部署', link: '/guide/installation' },
           { text: '首次运行', link: '/guide/first-run' },
-          { text: 'Kemo 网关接入', link: '/guide/kemo-gateway' }
+          { text: 'Kemo 网关接入', link: '/guide/kemo-gateway' },
+          { text: 'kemo-graph 图谱与检索项目', link: '/guide/kemo-graph' }
         ]
       },
       {
@@ -67,7 +68,6 @@ export default defineConfig({
           { text: '定时任务', link: '/usage/cron-tasks' },
           { text: '子代理', link: '/usage/sub-agents' },
           { text: '感知与拓展', link: '/usage/sense-expand' },
-          { text: '图谱与检索知识层', link: '/usage/kemo-graph' },
           { text: '消息平台接入', link: '/usage/message-platform' }
         ]
       },
