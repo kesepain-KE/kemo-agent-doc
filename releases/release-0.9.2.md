@@ -25,8 +25,7 @@
 ## 升级步骤
 
 ```bash
-python update.py --module core
+python update.py --module all
 ```
 
 更新完成后完整重启 kemo-agent。若同一路径仍持续返回拒绝访问，请检查是否同时启动了多个框架进程、目录只读权限、安全软件或备份程序；有界重试只处理短暂文件锁，不会绕过永久权限错误。
-
