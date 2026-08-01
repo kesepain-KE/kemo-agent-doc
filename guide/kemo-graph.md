@@ -63,18 +63,51 @@ PDF · DOCX · Markdown · TXT · HTML · RST · CSV
 
 导入后的 Markdown 原子写入本地目录，并通过 `file_map.json` 建立原始文件与 Markdown 的一对一映射。可以先转换、不调用模型，审核内容后再整理。
 
-### 工具调用式图谱构建
+### 高速结构化图谱构建
 
-图谱构建模型通过 Kemo 协议调用 LLM，但不会一次性返回难以校验的大型 JSON。模型在受控工具范围内搜索已有节点、新建或更新概念、建立关系并写入来源绑定。
+图谱构建模型通过 Kemo 协议调用 LLM，小文档单次请求、大文档按标题边界分段后并行构建。模型只返回 `local_id / keyword / summary / aliases / tags / evidence` 和局部实体关系；数据库 UUID、来源绑定和哈希均由本地系统控制。
+
+配置分离为 `graph_extract.md`（构建）和 `graph_organizer.md`（整理）两个独立提示词，构建追求速度与事实保真，整理阶段再处理同义合并。
 
 每篇文档共用一个数据库事务：模型、工具或校验过程失败时，整篇文档的图谱变更会整体回滚。
+
+### Ingestor 子包架构（v1.0.0）
+
+`core/ingestor/` 从单一约 2400 行文件拆分为七个模块的子包：
+
+| 模块 | 职责 |
+|------|------|
+| `__init__.py` | 薄协调层与公开 API |
+| `_scan.py` | 扫描 sources 状态与哈希差异 |
+| `_graph_build.py` | 图谱构建（结构化/工具调用） |
+| `_rag_build.py` | RAG 切片与多层向量构建 |
+| `_delete.py` | 文档删除与级联清理 |
+| `_file_map.py` | Markdown ↔ 原始文件映射 |
+| `_utils.py` | 公共工具与锁管理 |
+
+### 图谱整理与知识库重建
+
+- **图谱整理**（`graph_organizer.py`）：LLM 辅助扫描重叠节点候选，合并同义实体、迁移来源证据、清理自环投影，在单个 SQLite 事务中完成。未调用 `finish` 则全部回滚。
+- **变化文档重建**（`rebuilder.py`）：只处理哈希已变化的文档，不重复消费模型额度。
+- **全项目影子重建**：在临时影子目录验证全部来源、Graph、Embedding 和 FAISS 一致性后，原子切换正式知识库，旧库保留为时间戳备份。
+
+### 多层次向量化与 LLM 语义切分
+
+- **LLM 语义切分**（`chunker.py`）：按文档语义边界切分替代固定 token 窗口，每个切片是独立完整知识点。
+- **实体向量**（`entity_embeddings`）：将节点描述向量化，支持实体级语义检索。
+- **群组向量**（`community_embeddings`）：将知识群总结向量化，支持全局知识库概览检索。
+- **辅助向量一致性**：通过 `summary_hash` 与权威数据绑定，图谱整理后自动同步。
+
+### 搜索缓存
+
+`search_cache.py` 提供跨 CLI、FastAPI 与 Web 共享的 SQLite 持久化缓存。以知识库状态哈希判定过期，自动按上限修剪。同进程相同查询的并发调用自动合并。
 
 ### 图谱、RAG 与混合查询
 
 | 模式 | 适用问题 |
 |---|---|
 | 图谱查询 | 概念之间的关系、关系扩展和知识群 |
-| RAG 查询 | 语义上最接近问题的原文段落 |
+| RAG 查询 | 语义上最接近问题的原文段落，含实体/群组向量检索 |
 | 混合查询 | 使用图谱命中概念增强相关切片后，再进行向量召回与重排序 |
 
 混合查询会分别返回图谱结构和原文证据，不把它们混成无法追溯的一段文本。
@@ -92,6 +125,15 @@ POST /api/v1/import?ingest=true|false
 POST /api/v1/ingest
 GET  /api/v1/documents
 GET  /api/v1/graph
+POST /api/v1/jobs/organize-graph
+POST /api/v1/jobs/rebuild-knowledge-base
+POST /api/v1/jobs/rebuild-all
+POST /api/v1/jobs/summarize
+POST /api/v1/jobs/cleanup-recycle
+GET  /api/v1/jobs?limit=100
+GET  /api/v1/jobs/{job_id}
+GET  /api/v1/search/cache
+DELETE /api/v1/search/cache?stale_only=true
 ```
 
 推荐的调用路径：
