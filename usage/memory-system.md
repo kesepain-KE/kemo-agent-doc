@@ -19,7 +19,7 @@
 
 ## 存储和控制
 
-临时三层由 Markdown 正文和同目录 `data.json` 元数据组成；永久层只保存 Markdown。用户可以查看、纠正或删除记忆。
+从 `v0.10.0` 起，四档记忆以每用户独立的 `users/<user>/improve/memory.sqlite3` 为唯一权威存储，旧式 Markdown 碎片、`data.json` 与 `storage.json` 不再参与读取，也不会自动导入。`filename` 保留 `.md` 后缀仅为稳定的逻辑身份与展示合同，不表示磁盘上存在对应文件。用户可以查看、纠正或删除记忆；临时重要热画像 `memory_temporary_important.md` 仍是可重建视图，不是权威数据库或第五个生命周期层。
 
 ::: danger 敏感信息
 API Key、Token、密码、Cookie 和私钥不得写入长期记忆。运行时也会进行模式过滤，但不要依赖过滤器替代正确操作。
