@@ -1,8 +1,8 @@
 # 对话与历史
 
-kemo-agent 把用户可见的完整归档与提供给模型的临时上下文分开保存，因此长时间使用不会要求每次都加载全部对话。
+kemo-agent 把用户可见的完整归档与提供给模型的临时上下文分开保存，但两者都由每用户独立的 `users/<user>/history/history.sqlite3` 事务化管理，因此长时间使用不会要求每次加载全部对话或扫描历史目录。
 
-历史会话列表通过轻量索引和归档文件指纹定位会话。正常情况下只进行目录和文件元数据检查，不反复解析每个大型 `data.json`；索引缺失、损坏或检测到外部变化时才扫描完整归档并自动重建。
+历史会话列表直接查询 `history_sessions` 表，默认每页 50 条、最多 100 条，并用更新时间游标继续加载更早记录。标题、摘要、会话 ID 和正文搜索都在表内完成；网页启动不再逐目录检查归档文件。
 
 ## 会话隔离
 
@@ -12,12 +12,16 @@ kemo-agent 把用户可见的完整归档与提供给模型的临时上下文分
 
 | 层 | 位置 | 特点 |
 |---|---|---|
-| 完整归档 | `users/<user>/history/<window>/` | 无上限保存已提交的原始轮次 |
-| Provider 工作区 | `users/<user>/history/temp/<window>/` | 受 `agents.max_rounds` 和 Token 预算限制 |
+| 完整归档 | `history_windows.window_kind = archive` | 无上限保存已提交的原始轮次 |
+| Provider 工作区 | `history_windows.window_kind = runtime` | 受 `agents.max_rounds` 和 Token 预算限制 |
 
 上下文只按完整轮次选择，不会拆开一次 user/assistant/工具调用消息组。较旧轮次可由摘要接力，摘要缓存在临时工作区中；摘要失败不会覆盖已有缓存，手动压缩落盘校验失败时还会恢复压缩前的工作区和摘要。
 
-归档、临时工作区、摘要缓存和会话索引采用同目录临时文件加原子替换。Windows 上遇到安全软件或索引器造成的短暂共享冲突时会有限重试；持续权限错误仍会明确返回，不会静默跳过历史提交。
+archive/runtime 窗口、会话卡片、活跃绑定和消息检索由同一 SQLite WAL 数据库管理。单个窗口的 text、think、tool、items、data 五个逻辑分区在一个事务中提交，不再存在五文件部分写入或 Windows 原子替换冲突。
+
+::: danger v0.10.0 存储边界
+旧式 `history/data.json` 和 `history/<window>/*.json` 不会自动导入，也不会与新数据库混读。升级前若仍需旧对话，应先自行导出；确认无用后可删除旧目录。运行中备份 SQLite 时必须使用 backup API 或完整停止框架，不能只复制主文件而遗漏 WAL。
+:::
 
 ## 历史内容
 

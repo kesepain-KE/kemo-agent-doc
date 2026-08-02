@@ -41,6 +41,7 @@ export default defineConfig({
         text: '更新说明',
         collapsed: false,
         items: [
+          { text: 'v0.10.0 更新说明', link: '/releases/release-0.10.0' },
           { text: 'v0.9.3 更新说明', link: '/releases/release-0.9.3' },
           { text: 'v0.9.2 更新说明', link: '/releases/release-0.9.2' },
           { text: 'v0.9.1 更新说明', link: '/releases/release-0.9.1' },
@@ -103,6 +104,8 @@ export default defineConfig({
           { text: '运行原理', link: '/internals/runtime' },
           { text: '系统提示词', link: '/internals/system-prompt' },
           { text: '上下文管理', link: '/internals/context-management' },
+          { text: '历史存储', link: '/internals/history-storage' },
+          { text: '记忆存储', link: '/internals/memory-storage' },
           { text: '工具调用', link: '/internals/tool-calling' },
           { text: '记忆生命周期', link: '/internals/memory-lifecycle' },
           { text: '消息路由', link: '/internals/message-routing' },
