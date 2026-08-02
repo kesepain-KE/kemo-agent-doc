@@ -13,7 +13,7 @@
 | `history_summary` | object | 5 秒轮询，最多重试 5 次 | 已关闭会话的后台标题与摘要任务 |
 | `prompt` | object | 多段字符预算 | PromptBundle 截断与注入模式 |
 | `kemo_graph` | object | 全部关闭 | 图谱替换开关 |
-| `memory` | object | schema v3 | 记忆提取、注入和档位规则 |
+| `memory` | object | SQLite schema v1 | 记忆提取、注入和档位规则 |
 | `agent_runtime` | object | 队列 50，超时 600 秒 | 子代理运行时 |
 | `task_plan` | object | 最多 20 步 | 任务计划全局限制 |
 | `cron` | object | 启用，30 秒轮询 | 调度与拥塞退避 |
@@ -83,7 +83,7 @@
 
 | 字段 | 类型 | 默认值 | 说明 |
 |---|---|---:|---|
-| `memory.storage_schema_version` | integer | `3` | 文件型记忆结构版本 |
+| `memory.storage_schema_version` | integer | `1` | SQLite 记忆结构版本 |
 | `memory.extraction_mode` | string | `"compression_only"` | `disabled`、`compression_only`、`background` 或 `on_commit` |
 | `memory.recovery_max_rounds_per_scan` | integer | `10` | 单次恢复扫描最多补处理的轮数，运行时范围 1–20 |
 | `memory.extraction_batch_rounds` | integer | `5` | 一次模型分析最多处理的连续轮数，运行时范围 1–20 |

@@ -1,20 +1,21 @@
 # 记忆生命周期
 
-当前记忆使用 schema v3 文件型存储。每条记忆是独立 Markdown 文件，文件名在全部档位中充当全局唯一身份；临时层 `data.json` 只保存轻量元数据。
+从 `v0.10.0` 起，记忆以每用户独立数据库 `users/<user>/improve/memory.sqlite3` 为唯一权威存储，`filename` 保留 `.md` 后缀仅为稳定的逻辑身份与展示合同，不表示磁盘上存在对应 Markdown。表结构、事务边界与备份方式见[记忆存储](/internals/memory-storage)。本页只说明档位流动、提取与加权规则。
 
 ## 存储布局
 
 ```text
 users/<user>/improve/
-├── storage.json
-├── important_view.json
-├── seven_days/   ── *.md + data.json
-├── one_month/    ── *.md + data.json
-├── half_year/    ── *.md + data.json
-└── permanent/    ── *.md
+├── memory.sqlite3
+│   ├── memory_meta              # schema 与派生视图元数据
+│   ├── memory_fragments         # 四档正文与生命周期
+│   ├── memory_weight_events     # 用户历史证据加权记录
+│   ├── memory_operations        # 批量提取幂等结果
+│   └── memory_important_sources # 临时重要热画像来源与内容摘要
+└── memory_temporary_important.md  # 可重建热画像（非权威存储）
 ```
 
-临时元数据包含 `weight`、`created_at`、`content_updated_at`、`last_used_at`、`last_weight_date`、`tier_entered_at` 和 `expires_at`。绝对时间保存为 UTC；每日加权边界按 `Asia/Shanghai` 计算。
+`memory_fragments` 一行保存全部生命周期字段：`weight`、`created_at`、`content_updated_at`、`last_used_at`、`last_weight_date`、`tier_entered_at` 和 `expires_at`。绝对时间保存为 UTC；每日加权边界按 `Asia/Shanghai` 计算。旧式 Markdown 碎片、`storage.json`、`important_view.json` 不再参与读取，也不会自动导入。
 
 ## 晋级和过期
 
@@ -44,5 +45,5 @@ users/<user>/improve/
 临时记忆只在保存、手动压缩、Token 超限压缩等历史整理管线中，被 `self_improve` 依据用户原文命中时加权。候选必须带有能在本批用户消息中精确找到的 `evidence`；助手回复、推理和工具结果不会传入后台提取。同一记忆同一天最多 `+1`。Prompt 注入、用户查看、工具搜索、失败或取消均不加权。
 
 ::: danger 临时重要记忆
-`memory_temporary_important.md` 是由临时碎片生成的近期热画像，`important_view.json` 记录其来源。数据流严格保持“用户对话原文 → 临时三层 → 临时重要热画像”单向传递：后台 `context_compression` 和 `memory_promotion` 禁止读取 `important`，防止热画像反向加权源碎片。用户或主智能体主动查看时仍可只读访问，且查看不加权。任一来源丢失、内容变化、重复或校验失败时，旧视图会整体暂停注入并回退到全部临时记忆，等待下次巡检重建。热画像任何情况下都不得删除、清空或写入空内容。
+`memory_temporary_important.md` 是由临时碎片生成的近期热画像，其来源行与内容摘要记录在 `memory_important_sources` 表中。数据流严格保持“用户对话原文 → 临时三层 → 临时重要热画像”单向传递：后台 `context_compression` 和 `memory_promotion` 禁止读取 `important`，防止热画像反向加权源碎片。用户或主智能体主动查看时仍可只读访问，且查看不加权。任一来源丢失、内容变化、重复或校验失败时，旧视图会整体暂停注入并回退到全部临时记忆，等待下次巡检重建。热画像任何情况下都不得删除、清空或写入空内容。
 :::
