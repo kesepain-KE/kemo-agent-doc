@@ -34,6 +34,23 @@
 
 请求取消或工具超时时，运行时会向当前工具发送专属取消信号并留出短暂清理时间。该信号只针对本次工具调用，不会把工具超时误当成整轮用户取消；插件仍应主动检查取消信号并及时释放文件、网络或子进程资源。
 
+## Provider 工具调用完整性（v0.10.0）
+
+Provider 返回的工具调用在进入执行器前先经过完整性校验，只有完整解析为 JSON 对象的参数才可执行：
+
+| 情况 | 处理 |
+|---|---|
+| 参数是完整 JSON 对象 | 正常解析并执行 |
+| 参数缺失或为空 | 兼容为 `{}` 执行 |
+| 参数是无效 JSON 或非对象根节点（数组、字符串等） | 拒绝执行，工具结果返回明确解析错误 |
+| 原始参数字符串 | 只进入有界诊断（最多 500 字符），永远不会作为工具输入 |
+
+`finish_reason` 参与终态判断：`tool_calls`/`function_call` 记为 `requires_action`；`stop` 记为 `completed`；`length`（截断）、`content_filter`、缺失工具调用或参数解析失败统一记为 `incomplete`，**不会执行该批工具**。
+
+Kemo 原生链路中 `ToolCallItem.parse_error` 转为明确的 Provider 工具参数错误，`arguments_raw` 仅用于诊断；网络层重试与业务终态互相分离，不会把不完整响应伪装成成功调用。
+
+任务计划执行同样按 `done.metadata.status` 区分终态：`completed`/`success` 正常完成，`limited`、`cancelled`、`failed` 及其他显式非成功值都会暂停计划，并保留真实 `agent_status`、`stop_reason` 与 `failure` 详情，而不是折叠成笼统的工具缺失错误。
+
 ## 文件编辑保护
 
 内置 `file` 工具读取时返回带 1-based 行号的 `lines`，完整读取还返回文件 `sha256`。行替换和整行删除必须提交最近读取到的 `expected_old_text`；插入必须提交完整文件 `expected_hash`。文件在读后变化、Tab/空格不一致或目标行偏移时会拒绝写入，要求重新读取。
