@@ -103,15 +103,6 @@
 | `memory.tiers.half_year.upgrade_threshold` | integer | `60` | 半年层晋级阈值 |
 | `memory.tiers.half_year.next` | null | `null` | 达标后进入永久层 |
 
-## 图谱替换
-
-| 字段 | 类型 | 默认值 | 说明 |
-|---|---|---:|---|
-| `kemo_graph.kemo_graph_global_knowledge` | boolean | `false` | 替换全局知识索引 |
-| `kemo_graph.kemo_graph_shared_knowledge` | boolean | `false` | 替换共享知识索引 |
-| `kemo_graph.kemo_graph_user_knowledge` | boolean | `false` | 替换用户知识索引 |
-| `kemo_graph.kemo_graph_temporary_memory` | boolean | `false` | 替换半年、一月和七天记忆 |
-
 ## 调度与后台运行
 
 | 字段 | 类型 | 默认值 | 说明 |

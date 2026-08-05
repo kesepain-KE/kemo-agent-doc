@@ -147,7 +147,28 @@ v1.1.0 起查询链路先经过查询规划（受控扩展 + 语义漂移过滤�
 
 ## 如何与 kemo-agent 协作
 
-kemo-agent 可在需要项目资料或外部知识时调用 kemo-graph 的外部 HTTP API：
+kemo-agent 1.0.0 起把 kemo-graph 定位为**侧载的超级文档站**（外挂模式）：kemo-graph 项目本身提供文档库、上传、导入与检索能力；kemo-agent 通过全局拓展接入，只暴露注册表摘要并按需操作。
+
+- `global_expand/kemo_graph/` 注册文档库（`graph_config.json`，schema v2，Library ID + 绝对路径），执行状态、扫描、同步、构建和查询；
+- `plugins/kemo_graph/` 引导插件只读本地注册表，生成规范 `expand_call` 参数；
+- 不替换、不增强、不缩减 kemo-agent 的知识库或记忆；无专用 Prompt 段；无后台自动同步任务，更新必须由用户主动要求。
+
+真实操作统一进入：
+
+```text
+expand_call(scope="global", module="kemo_graph", command=<operation>, params={...})
+```
+
+核心操作：
+
+```text
+configuration_status / libraries   # 查看注册表（本地只读）
+status                             # 手动检查服务和选定库（联网只读）
+scan → 用户确认 → sync → ingest    # 更新流程（sync 不自动 ingest，删除默认不传播）
+query(mode=hybrid)                 # 检索；普通问答不自动查询
+```
+
+kemo-graph 服务端契约与 v1.2.0 保持一致：
 
 ```text
 GET  /api/v1/status
@@ -187,10 +208,11 @@ POST /api/v1/stores/sources/delete           # v1.2.0：按稳定 URI 删除外�
 推荐的调用路径：
 
 ```text
-kemo-agent 判断当前任务需要资料
-  → 调用 kemo-graph /query/hybrid
+用户明确要求查询/核对资料
+  → 查看 configuration_status / libraries
+  → 调用 query(mode=hybrid)
   → 获得概念关系、原文片段与来源
-  → 将结果用于回答、计划或后续工具决策
+  → 将结果用于回答或后续工具决策
 ```
 
 完整 API 契约见 [kemo-graph api.md](https://github.com/kesepain-KE/kemo-graph/blob/main/api.md)；上方调用路径说明了 kemo-agent 在任务中使用它的边界。
