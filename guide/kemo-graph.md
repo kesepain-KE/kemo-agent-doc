@@ -1,6 +1,6 @@
 # kemo-graph：Kemo 生态的图谱与检索项目
 
-> 当前版本：v1.1.1 — 语义叶子规范化、检索层级族折叠与父上下文展开（v1.1.0 起支持查询规划、语义分层切分、可移植知识库与应用更新系统）。
+> 当前版本：v1.2.0 — 外部权威来源同步协议、Office/EPUB/RTF 与结构化数据转换、GPU 优先图谱渲染（v1.1.1 起语义叶子规范化与检索层级族折叠；v1.1.0 起查询规划、语义分层切分、可移植知识库与应用更新系统）。
 
 [kemo-graph](https://github.com/kesepain-KE/kemo-graph) 是 Kemo 生态中面向资料沉淀、来源追溯与智能体检索的独立项目。
 
@@ -60,10 +60,12 @@ Markdown 是本地事实来源；图谱数据库、向量数据库和 FAISS 索�
 支持：
 
 ```text
-PDF · DOCX · Markdown · TXT · HTML · RST · CSV
+PDF · Word · PowerPoint · Excel · EPUB · RTF · 网页 · 文本 · 表格 · 结构化数据
+（.pdf · .docx · .pptx · .xlsx/.xlsm/.xls · .epub · .rtf · .md · .txt · .log
+ · .html · .rst · .csv · .tsv · .json/.jsonl/.ndjson · .yaml/.yml · .xml）
 ```
 
-导入后的 Markdown 原子写入本地目录，并通过 `file_map.json` 建立原始文件与 Markdown 的一对一映射。可以先转换、不调用模型，审核内容后再整理。
+v1.2.0 起自动识别 UTF-8、UTF-16、GB18030、Big5 等常见文本编码；CSV 同时检测编码与分隔符；DOCX 保留段落与表格顺序，电子表格按工作表输出，PPTX 按幻灯片输出，HTML 先清理脚本与导航噪声；PDF 只提取已有文本层，扫描版 PDF 不做 OCR，会明确提示交由主智能体预处理。
 
 ### 高速结构化图谱构建
 
@@ -108,6 +110,17 @@ PDF · DOCX · Markdown · TXT · HTML · RST · CSV
 - **层级族折叠**（`rag_engine.py`）：Rerank 前每个层级族只保留一个精确代表，large 块仅作为父上下文可用；Rerank 与词法匹配改以父级上下文内容参与打分。
 - **答案上下文展开**：`/query/answer` 与 Web 检索页同时返回父级上下文与精确命中片段，明确区分展开上下文与真实命中。
 
+### 外部权威来源同步（v1.2.0）
+
+`core/source_sync.py` 提供面向 kemo-agent 等上游权威存储的稳定同步协议：按 `source_uri` 幂等同步外部表记录，维护派生 Markdown、Graph 与 RAG，支持 `deleted=true` tombstone 与删除后恢复复用同一 `relative_path`/`source_id`。
+
+- 来源身份与版本元数据（`source_uri`、`source_type`、`source_revision`、`source_updated_at`、`source_metadata_json`、`external_content_hash`、`last_synced_at`）通过幂等迁移写入 `sources.db`，并建立唯一索引。
+- 幂等与冲突规则：正文与版本均相同为 `unchanged`；仅版本/元数据变化为 `metadata_updated` 不重建；正文变化且版本有效为 `updated`；版本倒退或冲突不覆盖；`deleted=true` 删除派生数据并级联 Graph/RAG；tombstone 不进入回收站。
+- 新增 Store scope `memory.user`（每用户统一记忆 Store），旧 memory scope 保留兼容。
+- 访问方式：`POST /api/v1/stores/sources/sync|status|delete`；CLI `source-sync` / `source-status` / `source-delete`（需 `--store-root`）。
+
+kemo-graph 不直接写上游 SQLite；派生 Markdown 可删除、可重建，上游表才是事实来源。
+
 ### 可移植知识库（v1.1.0）
 
 `portable_store.py` 支持在任意绝对知识位置建立独立 Store，固定目录名为 `kemo-graph-storage`：每个 Store 拥有自己的 manifest、sources.db、Graph、RAG、FAISS 与搜索缓存。跨位置联合查询（`query-federated`）不合并数据库，只在内存中融合带 Store 身份的结果，单 Store 故障隔离。路径必须绝对且不能含 `..`，可用 `portable_stores.allowed_roots` 收紧访问边界。
@@ -118,7 +131,7 @@ PDF · DOCX · Markdown · TXT · HTML · RST · CSV
 
 ### 搜索缓存
 
-`search_cache.py` 提供跨 CLI、FastAPI 与 Web 共享的 SQLite 持久化缓存。以知识库状态哈希判定过期，自动按上限修剪。同进程相同查询的并发调用自动合并。
+`search_cache.py` 提供跨 CLI、FastAPI 与 Web 共享的 SQLite 持久化缓存。以知识库状态哈希判定过期，自动按上限修剪。同进程相同查询的并发调用自动合并。v1.2.0 起 `config/config.json` 可配置 `search_cache_enabled`、`search_cache_max_entries`、`search_cache_max_bytes`。
 
 ### 图谱、RAG 与混合查询
 
@@ -166,6 +179,9 @@ GET  /api/v1/update/status                   # v1.1.0：更新状态
 POST /api/v1/update/check                    # v1.1.0：检查更新
 POST /api/v1/update/apply                    # v1.1.0：应用更新
 /api/v1/stores/*                             # v1.1.0：可移植 Store 管理
+POST /api/v1/stores/sources/sync             # v1.2.0：同步外部权威表记录
+POST /api/v1/stores/sources/status           # v1.2.0：来源同步状态分页
+POST /api/v1/stores/sources/delete           # v1.2.0：按稳定 URI 删除外部派生数据
 ```
 
 推荐的调用路径：
