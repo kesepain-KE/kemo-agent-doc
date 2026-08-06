@@ -291,6 +291,14 @@ Kemo Gateway 管理端在 `0.7.2` 延续安全管理边界，并补充了稳定�
 
 `0.7.3` 修正管理端调用日志小时选择器的着色口径：小时卡片的总调用次数独立显示，颜色严格由实际终态结果贡献——成功次数驱动绿色渐变、失败次数驱动红色渐变，两者同时存在时按强度叠加；取消或尚未终态的调用不会被误标为成功或失败。图例与提示文案同步改为「成功调用 / 失败调用」口径。
 
+## 推理续轮回放（0.7.4）
+
+`0.7.4` 修复 OpenCode thinking 模式多轮工具续轮丢失 `reasoning_content` 的问题：此前网关 Provider 在转换请求时直接丢弃 reasoning item，上游 Console Go 在 thinking 模式下强制要求回传 `reasoning_content`，缺失即拒绝请求。现在 opencode Provider 会把 reasoning 内容挂载到后续 assistant 消息的 `reasoning_content` 字段（支持 `content` / `summary` 回退，并在 user / tool_result 边界清空防串挂）；codexmanager Provider 增加 Responses 风格加密推理状态回放，状态绑定原 Provider 与模型，禁止跨厂商或跨模型复用。
+
+对 kemo-agent 的影响：使用 thinking 档位（`reasoning_effort` 非 none）且上游要求回传推理内容时，工具续轮不再被上游拒绝——子代理多轮工具调用、记忆热画像巡检等长链路恢复稳定。
+
+厂商包开发契约同步强化：要求推理模型如实声明 `ReasoningCapabilities.persisted_state`，并完成「响应映射 → Kemo reasoning item → 下一轮厂商请求」的无损回放；契约测试覆盖首次响应生成状态、Kemo ReasoningItem 保留状态、下一轮请求恢复状态、跨 Provider/跨模型被拒绝四条边界。Chat Completions 风格回填 assistant `reasoning_content`，Responses 风格回放独立 reasoning item，禁止两种协议机械混用。
+
 ## 常见问题
 
 | 现象 | 优先检查 |
