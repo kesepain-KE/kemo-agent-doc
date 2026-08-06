@@ -1,6 +1,6 @@
 # kemo-graph：Kemo 生态的图谱与检索项目
 
-> 当前版本：v1.2.0 — 外部权威来源同步协议、Office/EPUB/RTF 与结构化数据转换、GPU 优先图谱渲染（v1.1.1 起语义叶子规范化与检索层级族折叠；v1.1.0 起查询规划、语义分层切分、可移植知识库与应用更新系统）。
+> 当前版本：v1.2.1 — Store multipart 文件上传导入（v1.2.0 起外部权威来源同步协议、Office/EPUB/RTF 与结构化数据转换、GPU 优先图谱渲染；v1.1.1 起语义叶子规范化与检索层级族折叠；v1.1.0 起查询规划、语义分层切分、可移植知识库与应用更新系统）。
 
 [kemo-graph](https://github.com/kesepain-KE/kemo-graph) 是 Kemo 生态中面向资料沉淀、来源追溯与智能体检索的独立项目。
 
@@ -168,7 +168,7 @@ scan → 用户确认 → sync → ingest    # 更新流程（sync 不自动 ing
 query(mode=hybrid)                 # 检索；普通问答不自动查询
 ```
 
-kemo-graph 服务端契约与 v1.2.0 保持一致：
+kemo-graph 服务端契约与 v1.2.1 保持一致：
 
 ```text
 GET  /api/v1/status
@@ -200,6 +200,7 @@ GET  /api/v1/update/status                   # v1.1.0：更新状态
 POST /api/v1/update/check                    # v1.1.0：检查更新
 POST /api/v1/update/apply                    # v1.1.0：应用更新
 /api/v1/stores/*                             # v1.1.0：可移植 Store 管理
+POST /api/v1/stores/import                   # v1.2.1：multipart 文件上传导入
 POST /api/v1/stores/sources/sync             # v1.2.0：同步外部权威表记录
 POST /api/v1/stores/sources/status           # v1.2.0：来源同步状态分页
 POST /api/v1/stores/sources/delete           # v1.2.0：按稳定 URI 删除外部派生数据
