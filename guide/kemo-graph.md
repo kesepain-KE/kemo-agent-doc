@@ -218,6 +218,12 @@ POST /api/v1/stores/sources/delete           # v1.2.0：按稳定 URI 删除外�
 
 完整 API 契约见 [kemo-graph api.md](https://github.com/kesepain-KE/kemo-graph/blob/main/api.md)；上方调用路径说明了 kemo-agent 在任务中使用它的边界。
 
+## 更新与同版本强制更新（v1.2.1）
+
+kemo-graph 提供 `python update.py` 根入口与 Web 系统配置页的更新入口：按 GitHub `main/version.json` 的 SemVer 检查更新，自动安装仅支持 Git clone，且程序文件必须没有未提交修改（`.env`、`config/config.json`、知识库数据、外部文档、日志与输出目录不会被覆盖）。
+
+v1.2.1 起新增**同版本强制更新**：本地与远端版本相同时，`update.py` 会交互询问「是否强制重新执行更新？[y/N]」，确认后走修复模式（备份 → 强制同步 → 依赖安装 → 前端构建）；检查结果新增 `force_update_available` / `can_force_apply` 字段。适用于「版本相同但怀疑程序文件损坏、或本地缺少远端最近提交」的场景。
+
 ## 本地与安全边界
 
 kemo-graph 的 Markdown、SQLite、FAISS、回收站和日志默认保存在本地；但 Graph 构建、Embedding 与 Rerank 会经由 Kemo 网关发送给实际配置的模型服务。处理敏感资料前，应确认网关、Provider 与网络边界。
