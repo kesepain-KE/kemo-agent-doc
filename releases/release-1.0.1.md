@@ -98,6 +98,26 @@
 - 变更文件：114 个（含 tests/ 重组 49 删 + 49 增）
 - 新增全局知识文档：`plugin-development.md`、`architecture-overview.md`、`project-introduction.md`
 - 新增测试：`test_agent_timeout_survival.py`、`test_perception_compatibility.py`、`开发临时目录/test_kemo/`（65 用例）
+
+## 1.0.1 发布后增量更新（2026-08-07）
+
+1.0.1 之后又推送了一批增量改进，版本号保持 1.0.1 不变：
+
+### 引用抽屉过渡动画
+
+`ExpandReferenceDrawer`（拓展引用）与 `KnowledgeReferenceDrawer`（知识库引用）不再在关闭时直接卸载 DOM：
+
+- 抽屉节点常驻，通过 `show` 类驱动 CSS 过渡动画；关闭时设置 `inert` 与 `aria-hidden` 保证无障碍与焦点隔离
+- 背景遮罩仅在打开时渲染，避免遮挡页面交互
+- 卡片布局调整：网格行分区（图标与标题、整行引用按钮）、最小高度提升至 128px，按钮占满整行
+- 两个组件均新增「关闭时保留节点并通过 show 类驱动过渡」测试用例
+
+涉及文件：`web/frontend/src/components/ExpandReferenceDrawer.tsx/.module.css/.test.tsx`、`KnowledgeReferenceDrawer.tsx/.test.tsx`
+
+### 系统状态文件同步
+
+- `cron/task_cron_system/` 五个系统任务的运行时间戳随调度刷新
+- `global_expand/kemo_gateway_status/`、`global_expand/kemo_graph/` 的采集状态时间戳同步更新
 - 新增工具：`开发临时目录/release_check.py`（发布前 7 阶段验收）
 - 主要涉及：`run/agent_runner.py`、`run/agent_queue.py`、`run/prompt.py`、`run/prompt_sources.py`、`plugins/subagent_dispatch/`、`plugins/get_current_time/`、`plugins/web_search/`、`web/services/settings.py`、`global_knowledge/`、`agents.md`
 - 版本变化：根版本、core、agents、plugins、web 全部更新至 `1.0.1`
