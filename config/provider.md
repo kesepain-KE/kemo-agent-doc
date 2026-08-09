@@ -85,7 +85,7 @@ Kemo 公开模型名固定为 `<provider_id>-<厂商原始模型名>`。Web 设�
 }
 ```
 
-Provider 单次请求超时由源码固定为 120 秒，用户配置不接受 `timeout` 或自定义 `headers`。
+Provider 单次请求超时默认 120 秒，可通过用户配置 `provider.timeout` 覆盖（`chat` 与 `kemo` 模式一致）；`headers` 配置项会被忽略，不再接受。
 
 ::: tip 多模态模型
 `multimodal_models` 可分别声明识图、图片生成/编辑、语音识别/生成、语音到语音、视频理解和视频生成模型。专用工具只调用明确填写的能力模型，不会把不支持该操作的主模型当作兜底。

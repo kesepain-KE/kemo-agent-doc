@@ -12,7 +12,6 @@
 | `history` | object | 最近完整 3 轮 | 历史保留和连续失败阈值 |
 | `history_summary` | object | 5 秒轮询，最多重试 5 次 | 已关闭会话的后台标题与摘要任务 |
 | `prompt` | object | 多段字符预算 | PromptBundle 截断与注入模式 |
-| `kemo_graph` | object | 全部关闭 | 图谱替换开关 |
 | `memory` | object | SQLite schema v1 | 记忆提取、注入和档位规则 |
 | `agent_runtime` | object | 队列 50，超时 600 秒 | 子代理运行时 |
 | `task_plan` | object | 最多 20 步 | 任务计划全局限制 |
@@ -31,6 +30,7 @@
 | `tools.timeout` | integer | `240` | 单次工具执行超时（秒） |
 | `tools.max_iterations` | integer | `80` | 一轮 Run 的 Provider 迭代上限 |
 | `tools.consecutive_identical_call_limit` | integer | `8` | 相同工具和参数的连续调用上限 |
+| `tools.invalid_tool_arguments_retries` | integer | `2` | Provider 工具参数异常自动恢复次数，`0` 表示禁用 |
 | `history.recent_full_rounds` | integer | `3` | 摘要时保护的最近完整轮数 |
 | `history.consecutive_tool_fail_limit` | integer | `5` | 同一工具连续失败后的临时移除阈值 |
 
@@ -65,10 +65,10 @@
 | 字段 | 类型 | 默认值 | 说明 |
 |---|---|---:|---|
 | `prompt.char_limits.task_plan` | integer | `6000` | 任务计划段字符上限 |
-| `prompt.char_limits.perception` | integer | `8000` | 感知段字符上限 |
-| `prompt.char_limits.expand_data` | integer | `10000` | 拓展数据段字符上限 |
-| `prompt.char_limits.skill_prompts` | integer | `8000` | 技能描述字符上限 |
-| `prompt.char_limits.plugin_prompts` | integer | `10000` | 插件描述字符上限 |
+| `prompt.char_limits.perception` | integer | `20000` | 感知段字符上限 |
+| `prompt.char_limits.expand_data` | integer | `20000` | 拓展数据段字符上限 |
+| `prompt.char_limits.skill_prompts` | integer | `80000` | 技能描述字符上限 |
+| `prompt.char_limits.plugin_prompts` | integer | `80000` | 插件描述字符上限 |
 | `prompt.injection_mode.permanent_memory` | string | `"full"` | 永久记忆注入模式 |
 | `prompt.injection_mode.important_memory` | string | `"full"` | 临时重要记忆注入模式 |
 | `prompt.injection_mode.temporary_seven_days` | string | `"full"` | 七天记忆注入模式 |
@@ -109,6 +109,7 @@
 |---|---|---:|---|
 | `agent_runtime.queue_maxsize` | integer | `50` | 单用户子代理队列上限，`0` 表示无界 |
 | `agent_runtime.default_timeout` | integer | `600` | 子代理整体执行期限（秒）；到期后请求协作式取消 |
+| `agent_runtime.timeout_survival_seconds` | integer | `120` | 期限到达后的收尾存活期（秒）；存活期内自然完成仍保留结果 |
 | `task_plan.max_steps` | integer | `20` | 计划最大步骤数 |
 | `cron.enabled` | boolean | `true` | 启用 Cron 调度 |
 | `cron.poll_interval` | integer | `30` | 常规轮询间隔（秒） |
