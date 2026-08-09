@@ -25,6 +25,16 @@
 
 拓展操控由 `expand_call` 在隔离子进程中调用 `execute(command, params)`。结构化结果直接回到当前工具循环，不经过 `input_data.md`；图片、音视频、日志和其他大型结果通过 `artifacts` 返回，验证后复制到当前用户的 `download`。隔离子进程用于生命周期和进程树回收，不是操作系统权限沙箱，因此只能启用受信任模块。
 
+
+## 注入开关（v1.0.5 起）
+
+感知与拓展各自拥有独立的用户级总闸门与实时开关：
+
+- `perception.prompt_injection` / `expand.prompt_injection`（默认 `true`）：总闸门。关闭时对应 `[perception]` / `[expand_data]` 段完全不进入系统提示词；
+- `perception.realtime_injection` / `expand.realtime_injection`（默认 `false`）：开启后每次逻辑 Provider 请求前重读最新快照，工具续轮、运行中引导续轮与压缩重试都会看到最新数据。
+
+三态行为：**不注入**（数据照常采集，只不进提示词）/ **按轮注入**（本轮固定快照，Prompt Cache 命中率最高）/ **实时注入**（每次请求前取最新）。关闭状态在 Prompt 分段诊断中报告为 `disabled`，而不是空段。Web 设置页「来源白名单」区域提供对应开关，总闸门关闭时实时开关自动禁用。
+
 ## 内置 Kemo 网关状态拓展
 
 `global_expand/kemo_gateway_status/` 是默认未激活的内置全局拓展。它只读调用 Kemo Gateway

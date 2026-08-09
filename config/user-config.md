@@ -16,6 +16,10 @@
 | `expand.shared_whitelist` | array | `[]` | 允许的共享拓展 |
 | `expand.global_whitelist` | array | `[]` | 允许的全局拓展 |
 | `perception.global_whitelist` | array | `[]` | 允许的全局感知模块 |
+| `expand.prompt_injection` | boolean | `true` | 拓展数据总闸门；`false` 时整个 `[expand_data]` 段不进入系统提示词 |
+| `expand.realtime_injection` | boolean | `false` | `true` 时每次逻辑 Provider 请求前重读最新拓展快照 |
+| `perception.prompt_injection` | boolean | `true` | 感知数据总闸门；`false` 时整个 `[perception]` 段不进入系统提示词 |
+| `perception.realtime_injection` | boolean | `false` | `true` 时每次逻辑 Provider 请求前重读最新感知快照 |
 | `knowledge.use_shared` | boolean | `true` | 使用共享知识层 |
 | `knowledge.use_global` | boolean | `true` | 使用全局知识层 |
 | `plugins.whitelist` | array | `[]` | 主智能体可执行插件 |
@@ -83,4 +87,38 @@ Chat 模式保持原有行为，不访问 Kemo 能力接口。
 把 `provider.api_key` 留空并使用 `.env` 兜底通常更便于避免误提交。无论采用哪种方式，都不要把真实密钥纳入版本控制。
 :::
 
-已删除的旧字段（如 `knowledge.enabled`、`skills.user_whitelist`、Provider 的 `timeout` 和 `headers`）继续出现时会被视为未知字段。
+已删除的旧字段（如 `knowledge.enabled`、`skills.user_whitelist`、Provider 的 `headers`）继续出现时会被视为未知字段。Provider 的 `timeout` 自 1.0.x 起恢复支持（默认 120 秒，可覆盖，`chat` 与 `kemo` 一致）。
+
+## 运行容量与调度（用户可覆盖）
+
+以下为对象深合并字段，用户配置可按需覆盖全局默认值，完整默认与语义见[全局配置](/config/global-config)。
+
+| 字段 | 类型 | 默认值 | 说明 |
+|---|---|---:|---|
+| `provider_runtime.max_concurrent_requests` | integer | `10` | 全进程 Provider 并发槽位 |
+| `provider_runtime.request_semaphore_timeout` | number | `300` | 等待槽位超时（秒） |
+| `agent_runtime.default_timeout` | integer | `600` | 子代理整体执行期限（秒） |
+| `agent_runtime.timeout_survival_seconds` | integer | `120` | 期限到达后的收尾存活期（秒） |
+| `agent_runtime.queue_maxsize` | integer | `50` | 单用户子代理队列上限，`0` 表示无界 |
+| `web.max_concurrent_chats` | integer | `3` | 单用户并发 Run |
+| `web.max_pending_chats` | integer | `5` | 单用户等待区大小 |
+| `web.pending_chat_timeout` | number | `30` | 等待区超时（秒） |
+| `message.max_workers` | integer | `8` | 消息工作线程数 |
+| `message.max_queued_messages` | integer | `20` | 排队上限，`0` 表示无界兼容模式 |
+| `cron.poll_interval` | integer | `30` | 常规轮询间隔（秒） |
+| `cron.avoid_congestion` | boolean | `true` | Provider 拥塞时推迟普通任务 |
+| `cron.congestion_threshold_ratio` | number | `0.2` | 判定拥塞的可用槽位比例 |
+| `task_cron_system.sense_update_rate` | integer | `5` | 感知刷新间隔（秒） |
+| `task_cron_system.expand_update_rate` | integer | `5` | 拓展刷新间隔（秒） |
+| `task_cron_system.module_update_timeout` | integer | `120` | 单模块刷新子进程超时（秒） |
+| `tools.timeout` | integer | `240` | 单次工具执行超时（秒） |
+| `tools.max_iterations` | integer | `80` | 一轮 Run 的工具迭代上限 |
+| `tools.invalid_tool_arguments_retries` | integer | `2` | 工具参数异常自动恢复次数，`0` 表示禁用 |
+| `history.recent_full_rounds` | integer | `3` | 摘要保护的最近完整轮数 |
+| `history.consecutive_tool_fail_limit` | integer | `5` | 同一工具连续失败临时移除阈值 |
+| `memory.extraction_mode` | string | `"compression_only"` | 记忆提取模式（`disabled` / `compression_only` / `background` / `on_commit`） |
+| `memory.important_memory_max_chars` | integer | `5000` | 临时重要记忆注入字符上限 |
+| `agents.max_rounds` | integer | `80` | runtime 窗口轮次上限 |
+| `agents.token_limit` | integer | `1000000` | Token 总上限 |
+| `agents.conserved_rounds` | integer | `3` | 保留完整工具日志的最近轮数 |
+| `agents.rounds_after_compression` | integer | `20` | 压缩后保留轮数 |

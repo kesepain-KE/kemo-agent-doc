@@ -23,7 +23,7 @@ users/<user>/history/history.sqlite3
 ## 查询路径
 
 - 活跃会话按 `active_key` 主键恢复。
-- 会话卡片按 `source + updated_at` 索引分页，每页默认 50 条。
+- 会话卡片按 `source + updated_at` 索引分页，每页默认 50 条。 v1.0.5 起游标升级为 `[updated_at, session_id, source]` 三元素，时间戳相同的会话不会漏项或重复；历史列表按当前用户统一读取 Web / CLI / 外部消息全部来源，非 Web 会话在网页只读展示。
 - 标题、摘要、会话 ID 与正文搜索在 SQLite 中完成。
 - 打开会话、摘要整理和记忆整理时才加载指定窗口正文。
 - token 统计和后台维护直接枚举窗口表，不扫描文件系统。

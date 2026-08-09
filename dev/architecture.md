@@ -20,6 +20,8 @@ kemo-agent 是事件驱动的多用户运行时。Web、CLI、消息和 Cron 最
 | `global_sense/` | 全局感知模块 |
 | `global_expand/` / `shared_expand/` | 全局与共享拓展 |
 | `template/` | 用户、代理、技能、拓展、感知和任务骨架 |
+| `update/` | 更新板块实现（update.py 的 4 板块：core / agents / plugins / web） |
+| `events.py` | 统一运行事件类型定义（text_delta / tool_call_result / usage / error / done） |
 | `tests/template_tests/` | 按资源类型拆分的创建结果入口/出口合同验收基准 |
 
 ## Web 后端分层
@@ -31,7 +33,7 @@ Web 后端按“应用装配—路由—领域服务—公共契约”组织，�
 | `web/app.py` | 创建 FastAPI 应用、装配共享运行时并注册路由；保留聊天流等核心入口 |
 | `web/routes/` | 按 identity、sessions、files、modules、settings、tasks 等功能域声明 HTTP 路由 |
 | `web/service.py` | 对外兼容门面、聊天相关核心服务和既有测试兼容入口 |
-| `web/services/` | 文件、用户、知识、记忆、模块、技能、任务和运行状态等领域实现 |
+| `web/services/` | 文件、用户、知识、记忆、模块、技能、任务、运行状态与产物校验和找回等领域实现（含 v1.0.5 新增 `artifact_resolver.py`） |
 | `web/schemas.py` | Web 请求与响应的数据模型 |
 | `web/errors.py` | Web 层稳定异常类型与错误边界 |
 | `web/constants.py` | 上传、预览、技能归档等共享限制和类型映射 |
@@ -73,6 +75,7 @@ Web 后端按“应用装配—路由—领域服务—公共契约”组织，�
 | `session_runtime.py` | 会话锁与运行会话辅助 |
 | `memory_analysis.py` | 记忆候选批处理与持久化编排 |
 | `usage.py` | 用量累计与展示数据 |
+| `source_policy.py` | 拓展/感知注入策略与实时开关解析（v1.0.5 新增） |
 | `errors.py` | 稳定运行时异常类型 |
 | `log_store.py` | Cron 与外部消息结构化日志、旧文件迁移和保留策略 |
 
