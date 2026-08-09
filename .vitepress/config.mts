@@ -41,6 +41,8 @@ export default defineConfig({
         text: '更新说明',
         collapsed: false,
         items: [
+          { text: 'v1.0.5 更新说明', link: '/releases/release-1.0.5' },
+          { text: 'v1.0.3 更新说明', link: '/releases/release-1.0.3' },
           { text: 'v1.0.2 更新说明', link: '/releases/release-1.0.2' },
           { text: 'v1.0.1 更新说明', link: '/releases/release-1.0.1' },
           { text: 'v1.0.0 更新说明', link: '/releases/release-1.0.0' },
@@ -51,6 +53,8 @@ export default defineConfig({
           { text: 'v0.9.0 更新说明', link: '/releases/release-0.9.0' },
           { text: 'v0.8.1 更新说明', link: '/releases/release-0.8.1' },
           { text: 'v0.8.0 更新说明', link: '/releases/release-0.8.0' },
+          { text: 'v0.7.3 更新说明', link: '/releases/release-0.7.3' },
+          { text: 'v0.7.2 更新说明', link: '/releases/release-0.7.2' },
           { text: 'v0.7.1 更新说明', link: '/releases/release-0.7.1' },
           { text: 'v0.7.0 更新说明', link: '/releases/release-0.7.0' },
           { text: 'v0.6.0 更新说明', link: '/releases/release-0.6.0' },
