@@ -34,7 +34,8 @@ export default defineConfig({
           { text: '安装部署', link: '/guide/installation' },
           { text: '首次运行', link: '/guide/first-run' },
           { text: 'Kemo 网关接入', link: '/guide/kemo-gateway' },
-          { text: 'kemo-graph 图谱与检索项目', link: '/guide/kemo-graph' }
+          { text: 'kemo-graph 图谱与检索项目', link: '/guide/kemo-graph' },
+          { text: 'kemo-agent-app 移动客户端', link: '/guide/kemo-agent-app' }
         ]
       },
       {
