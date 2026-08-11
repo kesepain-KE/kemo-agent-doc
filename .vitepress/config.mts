@@ -42,6 +42,8 @@ export default defineConfig({
         text: '更新说明',
         collapsed: false,
         items: [
+          { text: 'App 账号会话隔离增量', link: '/releases/release-app-1.1.3-chat-isolation' },
+          { text: 'APP 活跃会话绑定增量', link: '/releases/release-1.1.1-active-session' },
           { text: 'v1.1.1 更新说明', link: '/releases/release-1.1.1' },
           { text: 'App v1.1.3 更新说明', link: '/releases/release-app-1.1.3' },
           { text: 'App v1.1.2 更新说明', link: '/releases/release-app-1.1.2' },
