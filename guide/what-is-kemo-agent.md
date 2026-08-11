@@ -22,8 +22,21 @@ kemo-agent 是一个本地优先、面向多用户的 Agent Runtime。它把模�
 kemo-agent 可以本地保存数据，但模型请求是否离开本机取决于你选择的 Provider。请同时检查模型服务的隐私政策和自己的授权范围。
 :::
 
+## Kemo 生态
+
+kemo-agent 不是一座孤岛。围绕它，几个独立维护、通过稳定协议协作的项目共同构成 Kemo 生态：
+
+| 项目 | 定位 |
+|---|---|
+| [kemo-adapter-api](https://github.com/kesepain-KE/kemo-adapter-api) | Kemo Provider Gateway：统一多厂商模型发现、流式响应、工具调用、能力声明、多模态 Asset 与 Token 计量，为 kemo-agent 提供一致的模型服务边界。 |
+| [kemo-graph](https://github.com/kesepain-KE/kemo-graph) | 知识图谱与 RAG 检索项目，可外挂为 kemo-agent 的超级文档站，通过 `expand_call` 按需查询、同步与维护。 |
+| [kemo-agent-app](https://github.com/kesepain-KE/kemo-agent-app) | kemo-agent 的 Android 生态客户端：连接 kemo-agent 与 Kemo 网关后，对话、任务、文件、拓展感知与配置管理都可以在手机上继续。 |
+| [kemo-agent-doc](https://github.com/kesepain-KE/kemo-agent-doc) | 本文档站：安装、配置、使用与扩展开发指南。 |
+
+移动端接入通过 kemo-agent 内的 `kemo_app` 全局拓展完成：它为 Android 客户端提供独立的 HTTP/SSE/WebSocket 桥接服务（两级认证、流式对话与运行中引导、任务与定时、文件传输上限 80 MiB、在线设备统计），使 kemo-agent 生态正式延伸至手机端。
+
 ## 当前状态
 
-项目当前正式版本为 `1.0.0`。主生态首次补齐并进入稳定主版本：从对话、历史、记忆和知识，到工具、技能、子代理、任务计划、定时调度、感知、拓展、外部消息，再到网页端、命令行和多模态交互，主要运行链路已经连接成完整闭环；Kemo Graph 定位为侧载的超级文档站（外挂模式），不再参与知识库与记忆的提示词替换。后续版本将以边缘生态扩展、兼容性、性能和长期可靠性优化为主。
+项目当前正式版本为 `1.1.0`。`1.0.0` 标志着主生态首次补齐并进入稳定主版本；`1.1.0` 完成主生态的移动端闭环，新增 `kemo_app` 全局拓展与 Android 客户端。后续版本将继续聚焦边缘生态、性能与长期可靠性。
 
-接下来可以阅读 [v1.0.0 更新说明](/releases/release-1.0.0)，或直接进入[快速开始](/guide/getting-started)。
+接下来可以阅读 [v1.1.0 更新说明](/releases/release-1.1.0)，或直接进入[快速开始](/guide/getting-started)。
