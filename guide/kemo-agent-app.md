@@ -12,24 +12,27 @@
 手机上的用户
   ↓
 kemo-agent-app
-  → 连接桥接服务，完成设备 Token 与账号两级认证
-  ↓  Kemo 协议
-kemo-adapter-api（桥接服务）
-  → 转发请求并鉴权，安全获取模型列表
-  ↓
+  → 连接 kemo_app 桥接服务，完成设备 Token 与账号两级认证
+  ↓  HTTP / SSE / WebSocket
 kemo-agent
-  → 对话、记忆、任务、文件、拓展与感知运行时
+  ├─ kemo_app 桥接服务（全局拓展，独立端口）
+  │    → 对话、引导、取消、历史、任务、文件、状态、事件推送
+  │    → 转发受权操作到框架 Web API
+  └─ 对话、记忆、任务、文件、拓展与感知运行时
+  ↓  Kemo 协议
+kemo-adapter-api（模型网关）
+  → 转发请求并鉴权，路由到已授权的模型 Provider
 ```
 
 三个项目各司其职：
 
 - **kemo-agent-app** 是移动端入口，负责把 kemo-agent 的能力带到 Android 设备上；
-- **kemo-agent** 是 Agent Runtime，负责对话、计划、工具、记忆和编排；
-- **kemo-adapter-api** 是模型网关，负责桥接与两级认证，并把 Kemo 请求路由到已授权的模型 Provider。
+- **kemo-agent** 是 Agent Runtime，负责对话、计划、工具、记忆和编排，并通过内置的 `kemo_app` 全局拓展为 App 提供独立的桥接接口；
+- **kemo-adapter-api** 是模型网关，负责把 Kemo 请求路由到已授权的模型 Provider。
 
 可以把它们理解为：
 
-> kemo-agent-app 负责随身携带；kemo-agent 负责持续工作；kemo-adapter-api 负责安全连接。
+> kemo-agent-app 负责随身携带；kemo-agent 负责持续工作与桥接；kemo-adapter-api 负责安全连接。
 
 ## kemo-agent-app 解决什么问题
 
@@ -145,10 +148,10 @@ App 在后台通过轮询检查会话状态，回复完成时推送通知，任�
 
 ## 如何连接 kemo-agent
 
-1. 部署并运行 kemo-agent 与 kemo-adapter-api 网关，配置账号与设备 Token；
+1. 在 kemo-agent 上启用 `kemo_app` 全局拓展（Android App 桥接服务，独立端口运行，提供 HTTP/SSE/WebSocket 接口），并配置设备 Token 与 App 账号；
 2. 安装并打开 kemo-agent-app；
-3. 在连接页填写桥接服务地址（模拟器访问宿主机默认 `http://10.0.2.2:8742`）、设备 Token、用户名与用户密码；
-4. 连接成功后即可开始对话与管理任务。
+3. 在连接页填写桥接服务地址（模拟器访问宿主机默认 `http://10.0.2.2:8742`）、设备 Token、用户名与用户密码，完成两级认证；
+4. 连接成功后即可开始对话与管理任务；回复完成后 App 会在后台收到通知，生成的图片、音视频与文件可直接预览。
 
 ## 获取与构建
 

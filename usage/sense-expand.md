@@ -43,6 +43,12 @@
 
 具体配置、命令与故障排查见[接入 Kemo Gateway](/guide/kemo-gateway#网关运行状态拓展)。
 
+## 内置 Android App 桥接拓展
+
+`global_expand/kemo_app/` 是 Android 客户端（kemo-agent-app）的常驻桥接服务全局拓展，运行于独立端口，提供 HTTP/SSE/WebSocket 三类接口：两级认证（设备 Token + 账号）、流式对话与运行中引导/取消、历史操作（列出/加载/删除/压缩/撤销上一轮）、任务与定时、状态、模块、文件（单次上传上限 80 MiB）、模型发现（仅限 Kemo 协议）与在线设备事件推送。
+
+桥接服务的凭据与运行时文件（`config.json`、`users.json`、`credential_registry.json` 等）只存在于本地部署副本，不进入仓库；App 端生态说明见 [kemo-agent-app](/guide/kemo-agent-app)。
+
 ::: tip 如何选择
 只需要把环境状态提供给智能体时使用感知；需要对外部系统执行操作时使用拓展；只提供工作方法和说明时更适合技能。
 :::
