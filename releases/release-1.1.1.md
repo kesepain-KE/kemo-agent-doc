@@ -1,18 +1,43 @@
-# kemo-agent-app 1.1.1 — 体验增强与可靠性修正
+# kemo-agent 1.1.1 — Android 会话来源分区
 
-1.1.0 让 kemo-agent 第一次真正住进手机；1.1.1 则是把这段移动端体验再打磨一轮：账号管理更顺手、背景切换即时生效、空数据状态不再被旧缓存误导，流式请求也带上了设备身份。
+1.1.0 让智能体住进手机；1.1.1 解决的是"住进来之后如何与桌面共存"的问题——Android App 的对话不再混在 Web 历史里，而是拥有独立的 `source=app` 分区。
 
-## 本次更新
+## 核心变更：APP 会话来源隔离
 
-| 领域 | 变更 |
+| 层面 | 变更 |
 |------|------|
-| 账号体验 | 保存账号支持直接录入与本地重命名，连接新智能体更快 |
-| 背景主题 | 重新选择自定义背景时立即刷新，相同 content URI 也能正确重载；补齐 MainActivity 调用点，`reloadKey` 全链路生效 |
-| 数据语义 | 显式空集合视为权威空结果，不再被旧缓存覆盖 |
-| 流式请求 | 聊天请求携带设备级 client id，网关侧可识别设备来源 |
-| 版本 | 构建配置、README 徽章、中英文版本资源、CI 与发布合同统一 1.1.1 |
+| kemo_app 桥接 | `/v1/chat` 与全部会话操作固定使用 `source=app`，设备端不能指定、覆盖或冒充其他来源；移除原先 `"web" if source == "app" else source` 的映射 |
+| 核心会话租约 | `ActiveRun` 携带 `source`；交互 API 校验 `web`/`app`；活动运行冲突、客户端租约、关闭/压缩/删除均按真实来源隔离 |
+| 历史索引 | `app` 归入 interactive 链，与 `web` 同 `session_id` 也互不干扰 |
+| Web 历史视图 | APP 归档标记为「APP版」并只读展示，网页不会接管或续写 |
+| 更新器 | 将 `kemo_app` 纳入内置全局拓展更新范围，带部署预检（Token/密钥/上游/端口/启用用户），只覆盖公开代码，保留部署配置与运行数据 |
 
-## 相关
+## 会话隔离语义
 
-- [kemo-agent-app 指南](/guide/kemo-agent-app)
-- [kemo-agent 1.1.0 — 移动端闭环](/releases/release-1.1.0)
+- 同一用户、同一 `session_id`，App 与 Web 各自持有独立的活动运行、租约和历史窗口；
+- 渠道只表示入口，不建立独立记忆区：所有入口共享同一 `memory.sqlite3`；
+- 设备请求体中的来源字段不可信，框架侧强制固定为 `app`。
+
+## 版本与文档
+
+- 根与 core/agents/plugins/web 四组件 `1.1.0 → 1.1.1`，CLI VERSION 与前端 package 同步；
+- readme / README_EN / agents.md / 全局知识文档一致更新；
+- 配套测试：桥接 APP 分区断言、Web 后端 source 透传、更新器保留配置用例。
+
+## 验证
+
+发布前完成系统验收（release_check 7/7）：
+
+- test_kemo：745 passed + 2 skipped + 56 subtests
+- template_contracts：10 passed
+- Python 编译、Git 补丁检查通过
+- 前端 Vitest：24 文件 / 181 passed；生产构建成功
+
+## 开始使用
+
+```bash
+git pull origin main
+python update.py --module all
+```
+
+更新器会在升级时同步刷新 `kemo_app` 桥接代码（保留部署配置与凭据）。App 端同步更新到 1.1.1 后，历史将与 Web 完全分区。相关阅读：[kemo-agent-app 1.1.1 更新说明](/releases/release-app-1.1.1)。
