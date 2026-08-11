@@ -49,6 +49,10 @@
 
 桥接服务的凭据与运行时文件（`config.json`、`users.json`、`credential_registry.json` 等）只存在于本地部署副本，不进入仓库；App 端生态说明见 [kemo-agent-app](/guide/kemo-agent-app)。
 
+`kemo_app` 的激活选择属于部署端本地状态。首次安装仍保持未激活；管理员显式激活后，执行 `core` 板块更新或全量更新会保留已有的 `open_input=true`，即使复制文件期间 Token、用户、上游地址等 readiness 条件暂时无法校验，也不会清除这一激活选择。管理员显式执行 `stop` / `deactivate` 后则继续保持停用，更新器不会重新激活它。
+
+保留激活选择不等于跳过运行时安全检查：桥接进程实际启动时仍会校验设备 Token、会话密钥、启用用户、上游地址和端口等条件，配置不完整时不会启动。更新器只刷新公开实现，并保留部署端的 `config.json`、`users.json`、`credential_registry.json`、`_runtime.json`、`input_data.md` 和日志等本地配置、凭据与运行数据。上述规则只适用于 `kemo_app`，不改变其他全局拓展的激活语义。
+
 ::: tip 如何选择
 只需要把环境状态提供给智能体时使用感知；需要对外部系统执行操作时使用拓展；只提供工作方法和说明时更适合技能。
 :::

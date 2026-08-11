@@ -85,3 +85,9 @@ PowerShell 使用 `cd D:\kemo-agent` 或 `Set-Location D:\kemo-agent`。`cd /d .
 出现 `failed`、`partial`、依赖安装失败或 Web 构建失败时，不算完成，版本号也不会推进。前端构建中的大分块提示属于体积警告，不等于构建失败。
 
 更新器备份不包含 `users/`。更新前仍应单独备份 `.env`、整个 `users/` 和自建的 `message/out/` 平台模块；自建可执行插件也应另行保存，因为 `plugins/` 会与远程完全同步。更新成功后重启 kemo-agent 使运行中的服务加载新代码。
+
+::: tip APP 桥接拓展的激活状态
+以下规则只针对内置的 `global_expand/kemo_app/`：首次安装保持未激活；管理员显式激活后，`python update.py --module core` 和全量更新都会保留本地 `open_input=true`。更新复制期间即使设备 Token、用户或上游地址等 readiness 条件暂时校验失败，也不会要求重新激活；管理员显式执行 `stop` / `deactivate` 后则仍保持停用，不会被更新器自动开启。
+
+更新器保留的是管理员的激活选择，不会绕过实际启动检查。桥接进程启动时仍会验证本地配置是否完整；`config.json`、`users.json`、`credential_registry.json`、`_runtime.json`、`input_data.md` 和日志等本地配置、凭据与运行数据也不会被公开源码覆盖。
+:::
