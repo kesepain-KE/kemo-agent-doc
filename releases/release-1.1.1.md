@@ -51,4 +51,4 @@ git pull origin main
 python update.py --module all
 ```
 
-更新器会在升级时同步刷新 `kemo_app` 桥接代码，同时保留部署配置、凭据、运行数据与显式激活选择。App 端同步更新到 1.1.1 后，历史将与 Web 完全分区。相关阅读：[kemo-agent-app 1.1.1 更新说明](/releases/release-app-1.1.1)。
+更新器会在升级时同步刷新 `kemo_app` 桥接代码，同时保留部署配置、凭据、运行数据与显式激活选择。App 端同步更新到 1.1.1 后，历史将与 Web 完全分区。
