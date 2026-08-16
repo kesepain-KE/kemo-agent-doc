@@ -42,6 +42,7 @@ export default defineConfig({
         text: '更新说明',
         collapsed: false,
         items: [
+          { text: 'v1.2.1 更新说明', link: '/releases/release-1.2.1' },
           { text: 'v1.2.0 更新说明', link: '/releases/release-1.2.0' },
           { text: 'v1.1.2 更新说明', link: '/releases/release-1.1.2' },
           { text: 'v1.1.1 更新说明', link: '/releases/release-1.1.1' },
