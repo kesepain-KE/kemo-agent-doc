@@ -1,6 +1,6 @@
 # kemo-graph：Kemo 生态的图谱与检索项目
 
-> 当前版本：v1.2.1 — Store multipart 文件上传导入（v1.2.0 起外部权威来源同步协议、Office/EPUB/RTF 与结构化数据转换、GPU 优先图谱渲染；v1.1.1 起语义叶子规范化与检索层级族折叠；v1.1.0 起查询规划、语义分层切分、可移植知识库与应用更新系统）。
+> 当前版本：v1.3.0 — 可调图谱抽取与稳健召回、KnowledgeBaseService 服务化、同版本强制更新统一、本地 markitdown 文档归一化（v1.2.1 起 Store multipart 文件上传导入与同版本强制更新；v1.2.0 起外部权威来源同步协议、Office/EPUB/RTF 与结构化数据转换、GPU 优先图谱渲染；v1.1.1 起语义叶子规范化与检索层级族折叠；v1.1.0 起查询规划、语义分层切分、可移植知识库与应用更新系统）。
 
 [kemo-graph](https://github.com/kesepain-KE/kemo-graph) 是 Kemo 生态中面向资料沉淀、来源追溯与智能体检索的独立项目。
 
@@ -168,7 +168,7 @@ scan → 用户确认 → sync → ingest    # 更新流程（sync 不自动 ing
 query(mode=hybrid)                 # 检索；普通问答不自动查询
 ```
 
-kemo-graph 服务端契约与 v1.2.1 保持一致：
+kemo-graph 服务端契约与 v1.3.0 保持一致：
 
 ```text
 GET  /api/v1/status
@@ -223,6 +223,8 @@ POST /api/v1/stores/sources/delete           # v1.2.0：按稳定 URI 删除外�
 kemo-graph 提供 `python update.py` 根入口与 Web 系统配置页的更新入口：按 GitHub `main/version.json` 的 SemVer 检查更新，自动安装仅支持 Git clone，且程序文件必须没有未提交修改（`.env`、`config/config.json`、知识库数据、外部文档、日志与输出目录不会被覆盖）。
 
 v1.2.1 起新增**同版本强制更新**：本地与远端版本相同时，`update.py` 会交互询问「是否强制重新执行更新？[y/N]」，确认后走修复模式（备份 → 强制同步 → 依赖安装 → 前端构建）；检查结果新增 `force_update_available` / `can_force_apply` 字段。适用于「版本相同但怀疑程序文件损坏、或本地缺少远端最近提交」的场景。
+
+v1.3.0 起，同版本强制更新从 `update.py`、CLI、Web 与本地 HTTP API 一致可用，支持 `force` 传播，并在合并后依赖/构建失败时安全回滚。该版本同时带来：可调图谱抽取（默认 `large` 粗粒度，支持 `small`/`medium`/`large` 与实体关系预算）、检索的查询扩展与 FAISS+精确词面兜底、`KnowledgeBaseService` 文档/图谱/检索/维护领域服务化，以及本地 `markitdown` 文档归一化层（`python -m markitdown` / `convert.py` / `convert.cmd`）。
 
 ## 本地与安全边界
 
