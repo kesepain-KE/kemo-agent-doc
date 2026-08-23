@@ -299,6 +299,17 @@ Kemo Gateway 管理端在 `0.7.2` 延续安全管理边界，并补充了稳定�
 
 厂商包开发契约同步强化：要求推理模型如实声明 `ReasoningCapabilities.persisted_state`，并完成「响应映射 → Kemo reasoning item → 下一轮厂商请求」的无损回放；契约测试覆盖首次响应生成状态、Kemo ReasoningItem 保留状态、下一轮请求恢复状态、跨 Provider/跨模型被拒绝四条边界。Chat Completions 风格回填 assistant `reasoning_content`，Responses 风格回放独立 reasoning item，禁止两种协议机械混用。
 
+## 密钥池与安全加固（0.7.5）
+
+`0.7.5` 为网关补齐 Provider 上游密钥池与密钥级故障转移，并加固 Web 鉴权与诊断脱敏：
+
+- Provider 上游密钥统一以 `api_keys` 数组保存（`secrets.json`），旧单密钥字段只读兼容，管理端下次写入自动转换。
+- 网关从当前游标按顺序选择密钥、请求前预留下一位置；并发请求尽量按开始顺序分摊，不承诺严格均匀轮询。
+- 仅当明确指向当前密钥的鉴权失效、额度耗尽、限流或余额不足时换钥匙；普通模型权限不足、参数错误（403）、模型不存在、Provider 整体不可用或已产生部分流式输出时不会盲目重放，全部候选失败才返回最终脱敏错误，流式路径有明确失败终态。
+- Web 写入配置或密钥先保存文件快照，校验、Provider 重载或多文件写入失败会回滚磁盘并回滚前序重载；无效热配置修复后可恢复热更新。
+- 管理端不透传 Provider `diagnostics()` 任意字段，仅返回 Provider ID、模型集合与脱敏密钥状态；`GET /status` 对嵌套日志、结构化错误与 URL 凭据递归脱敏。
+- 公网鉴权加固：本机回环（`127.0.0.1`/`::1`）在 Web 凭据为空时走可信 owner 模式；配置公网 `GATEWAY_BASE_URL` 或反向代理传入外部 Host / X-Forwarded-Host / Forwarded 后关闭该旁路。公网部署仍须配置双道鉴权 + HTTPS 反向代理。
+
 ## 常见问题
 
 | 现象 | 优先检查 |
