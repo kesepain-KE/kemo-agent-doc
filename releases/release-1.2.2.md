@@ -42,15 +42,25 @@
 - readme / README_EN / agents.md / 全局知识文档（kemo-transport-reliability、plugin-development、project-introduction、provider-tool-call-safety、user-directory-skeleton、version-and-update-modules）一致更新；
 - 新增/扩展测试：`tests/config/test_start_web_ports.py`、`tests/cron/test_task_plan.py`、`tests/expand/test_kemo_app_expand.py`、`tests/template_tests/user/validator.py`、前端（ChatPage / SettingsPage / ModulePages）。
 
+## 发布后修复
+
+1.2.2 发布后追加一组稳定性修正，版本号保持 1.2.2：
+
+- **Provider 工具参数诊断脱敏**：新增 `provider/protocol/diagnostics.py` 安全诊断契约，工具原始参数与疑似凭据不进入运行时错误、SSE 元数据、日志或持久诊断；`compat / openai_chat / provider_events / provider_tool_recovery` 接入脱敏，并移除 `raw_arguments` 元数据泄漏；针对恶意工具名或调用 ID 做白名单字符校验，非法值回退为 `unknown_tool`。
+- **任务计划边界终态状态修正**：`run/conversation/runtime.py` 的任务计划创建边界 done 事件元数据始终携带 `status="completed"`，不再只在存在边界时才输出，保证终态状态字段一致。
+- **运行结束音效浏览器播放降级**：`completionSound.ts` 浏览器播放音效加入 2 秒超时，播放挂起时停止浏览器音频并请求 Windows 后端降级播放。
+
+配套测试覆盖：`tests/config/test_config_provider.py`、`tests/provider/test_provider_protocol.py`、`tests/provider_tool_recovery/test_recovery_contract.py`、`tests/core/test_runtime_features.py`、`tests/web/test_web_backend.py`、`web/frontend/src/utils/completionSound.test.ts`。
+
 ## 验证
 
 发布前完成系统验收（release_check 7/7）：
 
-- test_kemo：89 passed
-- backend_tests：894 passed + 3 skipped + 57 subtests
+- test_kemo：90 passed
+- backend_tests：914 passed + 3 skipped + 57 subtests
 - template_contracts：10 passed
 - Python 编译、Git 补丁检查通过
-- 前端 Vitest：28 文件 / 216 passed；生产构建成功
+- 前端 Vitest：28 文件 / 218 passed；生产构建成功
 
 ## 开始使用
 
