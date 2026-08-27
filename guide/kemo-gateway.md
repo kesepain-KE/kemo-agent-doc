@@ -310,6 +310,79 @@ Kemo Gateway 管理端在 `0.7.2` 延续安全管理边界，并补充了稳定�
 - 管理端不透传 Provider `diagnostics()` 任意字段，仅返回 Provider ID、模型集合与脱敏密钥状态；`GET /status` 对嵌套日志、结构化错误与 URL 凭据递归脱敏。
 - 公网鉴权加固：本机回环（`127.0.0.1`/`::1`）在 Web 凭据为空时走可信 owner 模式；配置公网 `GATEWAY_BASE_URL` 或反向代理传入外部 Host / X-Forwarded-Host / Forwarded 后关闭该旁路。公网部署仍须配置双道鉴权 + HTTPS 反向代理。
 
+## 网关自更新与冲突恢复
+
+Kemo Gateway 的日常更新只有一个推荐入口：
+
+```powershell
+python update.py
+```
+
+运行后按数字选择即可，不需要给文件名增加参数：
+
+```text
+1. 检查并安装更新（推荐）
+2. 只检查更新，不修改文件
+3. 查看或恢复更新前备份
+4. 修复网关源码（高级操作）
+0. 退出
+```
+
+根目录 `update.py` 只是兼容入口，实际功能按职责放在 `update/` 包中；`python -m update` 与上述入口
+调用同一套实现。普通用户应优先使用菜单，不要直接执行 `git pull`、`git merge` 或手工复制远端
+源码，因为这些操作无法保护部署端私有数据，也无法在冲突后自动恢复。
+
+### 普通更新的保护范围
+
+更新器不会让远端提交覆盖以下部署数据：
+
+- `.env`；
+- `api/keys.json`；
+- `providers/` 下的私有 Provider、配置和 `secrets.json`；
+- `storage/` 下的统计、Asset 与执行数据库；
+- `core/runtime/`；
+- `.backup/`、日志、PID、备份文件和内部开发目录。
+
+更新开始前会锁定精确远端提交并建立仅包含可恢复源码的冷备份。本地未提交源码会保存为精确
+stash commit；更新器使用 `stash apply` 恢复，只有冲突、编译、前端和启动预检全部通过后才删除
+stash。这样可以避免旧式 `stash pop` 冲突后把 `UU` 文件留在部署目录。
+
+### 更新成功的硬条件
+
+更新器只有同时满足以下条件才报告成功：
+
+1. Git 不存在未解决合并文件，也不处于 merge、rebase、cherry-pick 或 revert 中间状态；
+2. 发布源码中不存在 `<<<<<<<`、`=======`、`>>>>>>>` 冲突标记；
+3. 当前 HEAD 等于更新前锁定的远端提交；
+4. Python 源码编译通过；
+5. `web/frontend/dist/index.html` 存在；
+6. `python start_web.py --preflight` 在独立进程中通过。
+
+任一步失败都会尝试恢复更新前 HEAD 和原本地修改，不会把冲突源码交给网关启动器。
+
+### 出现 `<<<<<<< Updated upstream` 时
+
+如果部署目录来自旧版更新器，并且启动时出现以下错误：
+
+```text
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; Updated upstream
+SyntaxError: invalid syntax
+```
+
+这表示 Git 工作区已经存在未解决冲突，不是 Python、Provider 或模型故障。处理顺序如下：
+
+1. 不要继续反复启动网关；
+2. 运行 `python update.py`；
+3. 选择 `4. 修复网关源码（高级操作）`；
+4. 确认修复目标提交；
+5. 等待依赖、前端、编译和启动预检全部完成；
+6. 修复成功后再运行 `python start_web.py`。
+
+修复模式会创建 Git recovery ref 和 `.backup/` 源码备份，然后重新对齐已跟踪源码。它不会恢复
+旧冲突代码覆盖干净版本，也不会覆盖环境变量、网关密钥、Provider 密钥或 storage 数据。如果旧版
+`update.py` 自身也已经损坏，应先从对应发布版本恢复更新器文件，再执行上述修复，不要直接删除
+`.git` 或整个部署目录。
+
 ## 常见问题
 
 | 现象 | 优先检查 |
@@ -325,6 +398,8 @@ Kemo Gateway 管理端在 `0.7.2` 延续安全管理边界，并补充了稳定�
 | 状态拓展返回 `401` | 是否使用独立 `STATUS_TOKEN`，而不是模型调用或 Web 密钥 |
 | 状态拓展返回 `503` | 网关是否已配置状态 Token；Token 是否与其他凭据重复；修改 `.env` 后是否重启 |
 | 测试可达但业务失败 | 探测仅验证最小调用；继续检查真实请求参数、上下文与工具能力 |
+| 启动文件出现 `<<<<<<< Updated upstream` | 旧更新留下 Git 冲突；停止启动并从更新菜单选择“修复网关源码” |
+| 更新失败后担心密钥或统计丢失 | `.env`、网关密钥、Provider 私有目录和 storage 均在更新保护边界外 |
 
 排查时可同时查看 Kemo Gateway 控制台中的模型探测、调用日志与失败日志。不要把完整 API Key、
 Provider 密钥、请求正文或原始厂商响应复制到公开 Issue。
