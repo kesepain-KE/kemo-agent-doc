@@ -38,6 +38,13 @@
 
 - 在运行结束音效基础上新增 `failure_sound.*`：Windows 桌面网页端最终失败/取消时播放，上传校验音频 MIME 与大小（5MB），存储与安全边界与 completion_sound 一致；新增文件 API 与前端设置入口。
 
+## Provider 输出解析有界重试与历史加固
+
+- 主智能体与子代理对 Provider 输出解析失败、截断 JSON 与结构化输出错误引入最多 5 次有界重试；取消、认证、输入校验与确定性协议错误不重试；`context_manage` 专用 JSON 修复耗尽后不再被外层重试放大。
+- 上下文压缩前的记忆提取结果在同一次子代理重试链路中复用，避免重复写盘；`ProviderError.retryable` 显式声明与缺省区分，`events.py` 新增 `retrying` 事件类型与非终态 `committed=false` 临时错误事件。
+- 持久化 Provider 响应标识（`id` / `request_id` / `model`）脱敏并限长；历史轮次指标改用脱敏投影，工具结果孤儿调用由 durable 执行记录修复配对，防止诊断截断破坏历史结构。
+- Web 前端识别 `retrying` 事件并回滚当前轮显示项，展示「重试中 N/M 次」提示与最终错误横幅；SSE 不再把临时失败当作终态或关闭长任务。
+
 ## 版本与文档
 
 - 根、core / agents / plugins / web 组件统一 `1.2.2 → 1.2.3`；
@@ -57,10 +64,10 @@
 发布前完成系统验收（release_check 7/7）：
 
 - test_kemo：90 passed
-- backend_tests：958 passed + 5 skipped
+- backend_tests：978 passed + 5 skipped
 - template_contracts：10 passed
 - Python 编译、Git 补丁检查通过
-- 前端 Vitest：29 文件 / 225 passed；生产构建成功
+- 前端 Vitest：29 文件 / 229 passed；生产构建成功
 
 ## 开始使用
 
