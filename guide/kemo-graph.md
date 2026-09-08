@@ -1,6 +1,6 @@
 # kemo-graph：Kemo 生态的图谱与检索项目
 
-> 当前版本：v1.3.0 — 可调图谱抽取与稳健召回、KnowledgeBaseService 服务化、同版本强制更新统一、本地 markitdown 文档归一化（v1.2.1 起 Store multipart 文件上传导入与同版本强制更新；v1.2.0 起外部权威来源同步协议、Office/EPUB/RTF 与结构化数据转换、GPU 优先图谱渲染；v1.1.1 起语义叶子规范化与检索层级族折叠；v1.1.0 起查询规划、语义分层切分、可移植知识库与应用更新系统）。
+> 当前版本：v1.3.1 — 导入快照哈希校验（`expected_origin_hash` 与 `IMPORT_SOURCE_CHANGED`）、多编码文本识别增强、网页端知识文档 Markdown/KaTeX/Mermaid 预览渲染（v1.3.0 起可调图谱抽取与稳健召回、KnowledgeBaseService 服务化、同版本强制更新统一、本地 markitdown 文档归一化；v1.2.1 起 Store multipart 文件上传导入与同版本强制更新；v1.2.0 起外部权威来源同步协议、Office/EPUB/RTF 与结构化数据转换、GPU 优先图谱渲染；v1.1.1 起语义叶子规范化与检索层级族折叠；v1.1.0 起查询规划、语义分层切分、可移植知识库与应用更新系统）。
 
 [kemo-graph](https://github.com/kesepain-KE/kemo-graph) 是 Kemo 生态中面向资料沉淀、来源追溯与智能体检索的独立项目。
 
@@ -119,6 +119,12 @@ v1.2.0 起自动识别 UTF-8、UTF-16、GB18030、Big5 等常见文本编码；C
 - 新增 Store scope `memory.user`（每用户统一记忆 Store），旧 memory scope 保留兼容。
 - 访问方式：`POST /api/v1/stores/sources/sync|status|delete`；CLI `source-sync` / `source-status` / `source-delete`（需 `--store-root`）。
 
+### 导入快照校验（v1.3.1）
+
+`POST /api/v1/stores/import-path` 支持可选 `expected_origin_hash`：调用方传入自己刚扫描得到的源文件 SHA-256，服务端先把源文件捕获为私有临时快照，并用同一快照完成哈希、转换与转换后复核。源文件在导入期间变化或哈希不一致时返回 `409 IMPORT_SOURCE_CHANGED`，不会注册文档或提交不一致的 Markdown。并发导入使用独立临时文件，失败时恢复 Markdown 与 file map 原状；重复导入保持原绝对路径来源身份，不无故更换 `source_id`。kemo-agent 1.2.6 起，外部来源同步侧默认发送该校验值，实现端到端原子一致。
+
+同版本还增强了 Big5、GB18030、Shift-JIS、CP1250/1252 等多编码文本识别（本地 markitdown 归一化层），并新增网页端知识文档预览渲染：GFM、KaTeX 数学公式、按需加载的 Mermaid 图表、Obsidian 双链/Callout 安全占位与 frontmatter 识别，默认不执行原文档 HTML 与脚本；HTTP API 的 `content` 字段始终返回规范 Markdown 原文，不转换为 HTML。
+
 kemo-graph 不直接写上游 SQLite；派生 Markdown 可删除、可重建，上游表才是事实来源。
 
 ### 可移植知识库（v1.1.0）
@@ -168,7 +174,7 @@ scan → 用户确认 → sync → ingest    # 更新流程（sync 不自动 ing
 query(mode=hybrid)                 # 检索；普通问答不自动查询
 ```
 
-kemo-graph 服务端契约与 v1.3.0 保持一致：
+kemo-graph 服务端契约与 v1.3.1 保持一致：
 
 ```text
 GET  /api/v1/status
@@ -201,6 +207,7 @@ POST /api/v1/update/check                    # v1.1.0：检查更新
 POST /api/v1/update/apply                    # v1.1.0：应用更新
 /api/v1/stores/*                             # v1.1.0：可移植 Store 管理
 POST /api/v1/stores/import                   # v1.2.1：multipart 文件上传导入
+POST /api/v1/stores/import-path              # v1.3.1：路径导入支持 expected_origin_hash 快照校验
 POST /api/v1/stores/sources/sync             # v1.2.0：同步外部权威表记录
 POST /api/v1/stores/sources/status           # v1.2.0：来源同步状态分页
 POST /api/v1/stores/sources/delete           # v1.2.0：按稳定 URI 删除外部派生数据
@@ -225,6 +232,8 @@ kemo-graph 提供 `python update.py` 根入口与 Web 系统配置页的更新�
 v1.2.1 起新增**同版本强制更新**：本地与远端版本相同时，`update.py` 会交互询问「是否强制重新执行更新？[y/N]」，确认后走修复模式（备份 → 强制同步 → 依赖安装 → 前端构建）；检查结果新增 `force_update_available` / `can_force_apply` 字段。适用于「版本相同但怀疑程序文件损坏、或本地缺少远端最近提交」的场景。
 
 v1.3.0 起，同版本强制更新从 `update.py`、CLI、Web 与本地 HTTP API 一致可用，支持 `force` 传播，并在合并后依赖/构建失败时安全回滚。该版本同时带来：可调图谱抽取（默认 `large` 粗粒度，支持 `small`/`medium`/`large` 与实体关系预算）、检索的查询扩展与 FAISS+精确词面兜底、`KnowledgeBaseService` 文档/图谱/检索/维护领域服务化，以及本地 `markitdown` 文档归一化层（`python -m markitdown` / `convert.py` / `convert.cmd`）。
+
+v1.3.1 继续领域化拆分（`core/knowledge_*`、`core/rag_*`、`core/faiss_index.py` 与 `api/store_routes.py`），公开契约不变；导入快照校验、多编码识别增强与网页端 Markdown/KaTeX/Mermaid 预览渲染一并落地。
 
 ## 本地与安全边界
 
