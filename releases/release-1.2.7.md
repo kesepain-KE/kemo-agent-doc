@@ -72,3 +72,32 @@
 
 - 全量后端 1148 passed + 7 skipped + 125 subtests；GitHub CI（ubuntu/windows × Python 3.10/3.13 矩阵）与 Security 全部 success。
 - 测试重写为真实生产边界：脏历史**首轮转换**后断言全部 ID 前缀正确、唯一、工具引用完整、通过 `validate_request()`，并验证幂等；假 round-trip 测试删除。新增 SSE 错误帧分类参数化测试。
+
+---
+
+## 第三轮修复（2026-09-09，commit f573ff1）
+
+### Chat 取消链路端到端接通（P1-1）
+
+- `run/conversation/provider_events.py` 不再按 `mode == "kemo"` 分叉：统一对两种传输调用 `stream(request, cancel_event=cancel_event)`，旧式自定义 provider 通过 TypeError 回退保持兼容。
+
+### 取消真正中断阻塞读（P1-2）
+
+- Chat 传输层复用 Kemo 的 `start_cancel_watcher`：watcher 线程在取消时关闭阻塞中的 response，`readline()` 立即解除阻塞；read 异常且 cancel 置位时抛 `ProviderCancelledError`（category=cancelled、retryable=false），不再等满 HTTP 超时。`ChatBridgeProvider.stream()` 显式把 cancel_event 传入 `chat_stream()`。
+
+### 畸形 index 按 call_id 隔离（P1-3）
+
+- 流式工具调用槽位解析改为 `_tool_slot()`：可用 index 直接寻址 → 有 call_id 时按 id 稳定映射（重复 id 归原槽、新 id 分配新槽）→ 均不可用时才退回帧内 position，且 position 已被占用即 fail closed（确定性错误、不重试）。两个并行调用 index=null 不会再被合并成一个拼错的工具调用。
+
+### partial-stream 安全重试放宽（P1-4）
+
+- `stream_interrupted` 的 retryable 条件从「无 text 且无 tool_parts」放宽为「无 text」：缓冲中的 tool_parts 尚未发布也未执行（tool_call_start 在流结束后才 yield），中断重试不会产生副作用。
+
+### 新增测试
+
+- 取消端到端（runtime 参数确实进入 ChatBridge/transport）、watcher 关闭解除阻塞 readline、畸形 index 双调用隔离、无 id 歧义 fail closed、`foofoo` 歧义的 schema 感知 name 聚合（注册表中存在 `foofoo` 时拼接、仅存在 `foo` 时判定重复帧）。
+- 全量后端 1153 passed + 7 skipped + 125 subtests；GitHub CI 与 Security success。
+
+### 遗留（已知，后续版本处理）
+
+- Chat false-completed continuation guard（模型口头说继续但没有 tool_calls 时仍标记 COMPLETED）——需要独立设计，避免污染 Kemo 原生状态机。
