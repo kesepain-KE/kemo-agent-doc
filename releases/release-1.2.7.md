@@ -44,3 +44,31 @@
 
 - 仅影响 provider.type=chat；kemo 原生链路不受影响。
 - 版本 1.2.6 → 1.2.7（根 + 四组件 + 前端 package.json）。
+
+---
+
+## 第二轮审核修复（2026-09-09 并入，commit 68b3f20）
+
+### 首轮 Item ID 归一化（P1）
+
+- `chat_request_to_kemo()` 的 `_unique_id()` 语义收紧：历史 ID 不带对应语义前缀（msg_/rs_/call_/result_）时在**第一次转换**即重写为请求内唯一新 ID。真实主循环只做一次 Chat → Kemo 转换，脏 ID（item_xxx、legacy_message_1 等）从此不可能进入严格协议层，`Invalid 'input[N].id'` 类错误在入口封死。
+- `call_id` 生成前缀从 `callid_` 统一为 `call_`（compat 与 run/history 两处），工具调用/结果引用映射保持不变。
+- `validate_request()` 新增 `validate_item_id_prefixes()` 严格不变量：message→msg_、reasoning→rs_、tool_call→call_、tool_result→result_、全局唯一；绕过兼容桥的脏路径立即得到确定性 ProtocolValidationError，绝不进入重试。
+
+### 流式聚合补强（P1）
+
+- `function.name` 重复完整帧防翻倍：片段与累计值相同时视为重复帧丢弃，真实拆帧分片（history_ + search）仍正常拼接；测试补回 `tool_name == "file"` 断言。
+
+### SSE 内嵌错误分类（P2）
+
+- 流中出现 `{"error":{...}}` 帧时按 OpenAI 错误类型归一化：invalid_request_error、authentication_error、permission_error、conflict_error、unprocessable_entity_error 等确定性类型 → 不可重试 category + 显式 retryable=false，外层协调器 0 次重试直接终态提交；未知类型保持默认瞬态分类。
+
+### 协作取消（P2）
+
+- `ChatBridgeProvider.stream()` / `AsyncProviderFacade.stream()` 接受 `cancel_event`；传输层在每次 socket 读前后检查取消标志，命中即抛 `ProviderCancelledError`（category=cancelled、retryable=false），不再等满 HTTP 超时。
+- 原生 Kemo 网关 provider 补充 `close()` 透传。
+
+### 第二轮验证
+
+- 全量后端 1148 passed + 7 skipped + 125 subtests；GitHub CI（ubuntu/windows × Python 3.10/3.13 矩阵）与 Security 全部 success。
+- 测试重写为真实生产边界：脏历史**首轮转换**后断言全部 ID 前缀正确、唯一、工具引用完整、通过 `validate_request()`，并验证幂等；假 round-trip 测试删除。新增 SSE 错误帧分类参数化测试。
