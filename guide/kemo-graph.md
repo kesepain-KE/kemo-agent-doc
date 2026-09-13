@@ -1,6 +1,6 @@
 # kemo-graph：Kemo 生态的图谱与检索项目
 
-> 当前版本：v1.3.1 — 导入快照哈希校验（`expected_origin_hash` 与 `IMPORT_SOURCE_CHANGED`）、多编码文本识别增强、网页端知识文档 Markdown/KaTeX/Mermaid 预览渲染（v1.3.0 起可调图谱抽取与稳健召回、KnowledgeBaseService 服务化、同版本强制更新统一、本地 markitdown 文档归一化；v1.2.1 起 Store multipart 文件上传导入与同版本强制更新；v1.2.0 起外部权威来源同步协议、Office/EPUB/RTF 与结构化数据转换、GPU 优先图谱渲染；v1.1.1 起语义叶子规范化与检索层级族折叠；v1.1.0 起查询规划、语义分层切分、可移植知识库与应用更新系统）。
+> 当前版本：v1.4.0 — 文档项目化组织（项目文件夹、重命名、批量移动、指定项目上传、回收站同路径安全覆盖）、独立构建状态页、真实检索阶段遥测、按分类查看运行日志与有界读取缓存（v1.3.1 起导入快照哈希校验（`expected_origin_hash` 与 `IMPORT_SOURCE_CHANGED`）、多编码文本识别增强、网页端知识文档 Markdown/KaTeX/Mermaid 预览渲染；v1.3.0 起可调图谱抽取与稳健召回、KnowledgeBaseService 服务化、同版本强制更新统一、本地 markitdown 文档归一化；v1.2.1 起 Store multipart 文件上传导入与同版本强制更新；v1.2.0 起外部权威来源同步协议、Office/EPUB/RTF 与结构化数据转换、GPU 优先图谱渲染；v1.1.1 起语义叶子规范化与检索层级族折叠；v1.1.0 起查询规划、语义分层切分、可移植知识库与应用更新系统）。
 
 [kemo-graph](https://github.com/kesepain-KE/kemo-graph) 是 Kemo 生态中面向资料沉淀、来源追溯与智能体检索的独立项目。
 
@@ -127,6 +127,22 @@ v1.2.0 起自动识别 UTF-8、UTF-16、GB18030、Big5 等常见文本编码；C
 
 kemo-graph 不直接写上游 SQLite；派生 Markdown 可删除、可重建，上游表才是事实来源。
 
+### 文档项目化组织（v1.4.0）
+
+文档管理支持项目文件夹：可以新建项目、把文档上传到指定项目、单篇重命名与移动、批量移动到目标项目，也可以只清空某个项目的文档。`core/document_organization.py` 只改变物理路径，不改写正文；移动与改名保留来源身份、正文哈希及既有 Graph/RAG 索引，后续扫描不会把已整理文档识别成新来源或已删除来源。项目组织与导入、整理共用同一把知识库写锁。
+
+同版本起，回收站里的同路径副本允许安全覆盖：先备份旧副本，新文件与元数据写入成功后再清理备份；失败时回滚活动文件与回收站副本，不会留下「记录仍是活动状态、文件已被移走」的中间态。归档整理接口另外提供 `retry_failed`，可对先前失败并跳过的来源重试。
+
+### 检索阶段遥测（v1.4.0）
+
+`core/query_progress.py` 在请求上下文中记录真实发生的检索阶段：查询规划、查询向量化、图谱命中、向量召回、关键词召回、切片聚合、重排序与回答生成，并区分缓存命中与 LLM 规划回退。客户端在 `POST /api/v1/query/*` 请求头携带 `x-kemo-progress-id` 后，可通过 `GET /api/v1/query/progress/{progress_id}` 只读轮询。未绑定进度上下文时（CLI 与既有调用）钩子不记录任何数据，原有响应格式保持不变；进度是进程内短期状态，重启即清空，不持久化查询正文或检索结果。
+
+### 分类运行日志与读取缓存（v1.4.0）
+
+`GET /api/v1/system/logs` 按 `category=terminal|query|internal` 与 `date` 读取已知每日日志，只接受固定类别与日期格式，不接收任意路径；输出统一经过凭据与 ANSI 转义脱敏。终端日志由 `core/terminal_logging.py` 镜像 Python 与 Uvicorn 记录，不重定向进程标准流，配置变更以「文件修订号」为真相来源，运行中修改日志目录或级别即可生效。
+
+`core/read_cache.py` 是有界进程内读取缓存：以文件修订号（inode、大小、纳秒时间戳）判定变化，缓存文档状态、知识库指纹、查询规划提示词哈希、配置文本与日志读取结果，并合并同一键的并发读取；不缓存数据库连接、模型客户端等可变对象。持久化搜索结果缓存仍由 `core/search_cache.py` 负责，其状态哈希与并发生成锁在 v1.4.0 一并接入该缓存，用完的锁会被回收。
+
 ### 可移植知识库（v1.1.0）
 
 `portable_store.py` 支持在任意绝对知识位置建立独立 Store，固定目录名为 `kemo-graph-storage`：每个 Store 拥有自己的 manifest、sources.db、Graph、RAG、FAISS 与搜索缓存。跨位置联合查询（`query-federated`）不合并数据库，只在内存中融合带 Store 身份的结果，单 Store 故障隔离。路径必须绝对且不能含 `..`，可用 `portable_stores.allowed_roots` 收紧访问边界。
@@ -174,7 +190,7 @@ scan → 用户确认 → sync → ingest    # 更新流程（sync 不自动 ing
 query(mode=hybrid)                 # 检索；普通问答不自动查询
 ```
 
-kemo-graph 服务端契约与 v1.3.1 保持一致：
+kemo-graph 服务端契约与 v1.4.0 保持一致：
 
 ```text
 GET  /api/v1/status
@@ -182,12 +198,18 @@ POST /api/v1/query/graph
 POST /api/v1/query/rag
 POST /api/v1/query/hybrid
 POST /api/v1/query/answer          # v1.1.0：混合检索问答
-POST /api/v1/import?ingest=true|false
-POST /api/v1/ingest
-GET  /api/v1/documents
+POST /api/v1/import?ingest=true|false      # v1.4.0：可用 project 指定目标项目
+POST /api/v1/ingest                        # v1.4.0：可用 retry_failed 重试失败来源
+GET  /api/v1/documents                     # v1.4.0：支持 project / search / graph_status / rag_status / include_summary
 PUT  /api/v1/documents/{source_id}/content   # v1.1.0：文档内容编辑
 POST /api/v1/documents/delete-batch          # v1.1.0：批量删除
-DELETE /api/v1/documents?confirm=delete-all  # v1.1.0：删除全部
+DELETE /api/v1/documents?confirm=delete-all  # v1.4.0：可用 project 只清空指定项目
+GET  /api/v1/projects                        # v1.4.0：项目文件夹列表
+POST /api/v1/projects                        # v1.4.0：新建项目
+PATCH /api/v1/documents/{source_id}/location # v1.4.0：文档重命名与移动
+POST /api/v1/documents/move-batch            # v1.4.0：批量移动到项目
+GET  /api/v1/query/progress/{progress_id}    # v1.4.0：检索进度只读轮询
+GET  /api/v1/system/logs                     # v1.4.0：分类运行日志（category / date / limit）
 GET  /api/v1/nodes/{node_id}                 # v1.1.0：节点详情
 DELETE /api/v1/nodes/{node_id}
 GET  /api/v1/relations/{edge_id}             # v1.1.0：关系详情
@@ -234,6 +256,8 @@ v1.2.1 起新增**同版本强制更新**：本地与远端版本相同时，`up
 v1.3.0 起，同版本强制更新从 `update.py`、CLI、Web 与本地 HTTP API 一致可用，支持 `force` 传播，并在合并后依赖/构建失败时安全回滚。该版本同时带来：可调图谱抽取（默认 `large` 粗粒度，支持 `small`/`medium`/`large` 与实体关系预算）、检索的查询扩展与 FAISS+精确词面兜底、`KnowledgeBaseService` 文档/图谱/检索/维护领域服务化，以及本地 `markitdown` 文档归一化层（`python -m markitdown` / `convert.py` / `convert.cmd`）。
 
 v1.3.1 继续领域化拆分（`core/knowledge_*`、`core/rag_*`、`core/faiss_index.py` 与 `api/store_routes.py`），公开契约不变；导入快照校验、多编码识别增强与网页端 Markdown/KaTeX/Mermaid 预览渲染一并落地。
+
+v1.4.0 沿用同一更新流程，并把应用版本统一为 1.4.0：`version.json`、前端 `package.json` 与锁文件、markitdown 包元数据和更新记录同步；Kemo 1.0、`/api/v1` 与存储格式版本不随应用版本改号。更新源码、安装依赖、构建前端后重启服务即可，不必仅为版本升级清空或重建现有知识库；正文或抽取设置发生变化时仍按原流程手动重建。新增的终端日志无法补录过去未保存的输出，内存读取缓存与检索进度会在进程重启后清空。
 
 ## 本地与安全边界
 
