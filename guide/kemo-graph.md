@@ -1,6 +1,6 @@
 # kemo-graph：Kemo 生态的图谱与检索项目
 
-> 当前版本：v1.5.0 — 更新入口新增只读检查 `--dirty/--changes` 与强制更新 `--force`（先备份未提交的程序文件修改，失败时放回原处），更新被拒绝时附带可执行的下一步提示，重启改用无控制台解释器与终端解耦（v1.4.0 起文档项目化组织、独立构建状态页、真实检索阶段遥测、分类运行日志与有界读取缓存；v1.3.1 起导入快照哈希校验（`expected_origin_hash` 与 `IMPORT_SOURCE_CHANGED`）、多编码文本识别增强、网页端知识文档 Markdown/KaTeX/Mermaid 预览渲染；v1.3.0 起可调图谱抽取与稳健召回、KnowledgeBaseService 服务化、同版本强制更新统一、本地 markitdown 文档归一化；v1.2.1 起 Store multipart 文件上传导入与同版本强制更新；v1.2.0 起外部权威来源同步协议、Office/EPUB/RTF 与结构化数据转换、GPU 优先图谱渲染；v1.1.1 起语义叶子规范化与检索层级族折叠；v1.1.0 起查询规划、语义分层切分、可移植知识库与应用更新系统）。
+> 当前版本：v1.5.1 — 独立 Store 补齐文档组织接口（项目列表与创建、文档重命名与移动、批量移动），修复文档导入异常处理因缺少 `DocumentImportError` 导入而退化为 `NameError`，以及 Kemo 请求标识符约有六成概率以数字开头而被网关拒绝、导致查询规划静默降级为原始查询的问题；网页端运行日志改为终端流风格，系统配置页新增版本检测（v1.5.0 起更新入口新增只读检查 `--dirty/--changes` 与强制更新 `--force`（先备份未提交的程序文件修改，失败时放回原处），更新被拒绝时附带可执行的下一步提示，重启改用无控制台解释器与终端解耦（v1.4.0 起文档项目化组织、独立构建状态页、真实检索阶段遥测、分类运行日志与有界读取缓存；v1.3.1 起导入快照哈希校验（`expected_origin_hash` 与 `IMPORT_SOURCE_CHANGED`）、多编码文本识别增强、网页端知识文档 Markdown/KaTeX/Mermaid 预览渲染；v1.3.0 起可调图谱抽取与稳健召回、KnowledgeBaseService 服务化、同版本强制更新统一、本地 markitdown 文档归一化；v1.2.1 起 Store multipart 文件上传导入与同版本强制更新；v1.2.0 起外部权威来源同步协议、Office/EPUB/RTF 与结构化数据转换、GPU 优先图谱渲染；v1.1.1 起语义叶子规范化与检索层级族折叠；v1.1.0 起查询规划、语义分层切分、可移植知识库与应用更新系统）。
 
 [kemo-graph](https://github.com/kesepain-KE/kemo-graph) 是 Kemo 生态中面向资料沉淀、来源追溯与智能体检索的独立项目。
 
@@ -133,6 +133,14 @@ kemo-graph 不直接写上游 SQLite；派生 Markdown 可删除、可重建，�
 
 同版本起，回收站里的同路径副本允许安全覆盖：先备份旧副本，新文件与元数据写入成功后再清理备份；失败时回滚活动文件与回收站副本，不会留下「记录仍是活动状态、文件已被移走」的中间态。归档整理接口另外提供 `retry_failed`，可对先前失败并跳过的来源重试。
 
+### 独立 Store 文档组织（v1.5.1）
+
+v1.4.0 的项目文件夹、重命名与移动最初只提供给默认知识库；v1.5.1 把同一套能力补齐到独立 Store。`POST /api/v1/stores/projects/list` 与 `POST /api/v1/stores/projects/create` 用于列出和新建项目，`POST /api/v1/stores/documents/location` 用于单篇重命名或移动，`POST /api/v1/stores/documents/move-batch` 用于批量移动。四个端点沿用既有 Store 契约：一律使用 `POST`，`store_root` 只在 JSON 请求体中传输，内部复用同一个 `KnowledgeBaseService` 门面，不复制文档组织逻辑。
+
+批量移动要求 `source_ids` 非空、自动去重、拒绝空字符串、最多 1000 项，项目名最多 160 字符；空项目名表示移动回根目录。整批检查、整批执行的语义不变，单篇位置更新继续返回 Store 身份包络。
+
+边界值得留意：由 `/stores/sources/sync` 写入且带 `source_uri` 的权威上游文档不允许在此改名或移动，必须回到上游系统修改；通过导入接口进入的普通文档可以正常整理。移动只改变物理路径，不影响来源身份与既有 Graph/RAG 索引。
+
 ### 检索阶段遥测（v1.4.0）
 
 `core/query_progress.py` 在请求上下文中记录真实发生的检索阶段：查询规划、查询向量化、图谱命中、向量召回、关键词召回、切片聚合、重排序与回答生成，并区分缓存命中与 LLM 规划回退。客户端在 `POST /api/v1/query/*` 请求头携带 `x-kemo-progress-id` 后，可通过 `GET /api/v1/query/progress/{progress_id}` 只读轮询。未绑定进度上下文时（CLI 与既有调用）钩子不记录任何数据，原有响应格式保持不变；进度是进程内短期状态，重启即清空，不持久化查询正文或检索结果。
@@ -190,7 +198,7 @@ scan → 用户确认 → sync → ingest    # 更新流程（sync 不自动 ing
 query(mode=hybrid)                 # 检索；普通问答不自动查询
 ```
 
-kemo-graph 服务端契约与 v1.4.0 保持一致：
+kemo-graph 服务端契约与 v1.5.1 保持一致：
 
 ```text
 GET  /api/v1/status
@@ -233,6 +241,10 @@ POST /api/v1/stores/import-path              # v1.3.1：路径导入支持 expec
 POST /api/v1/stores/sources/sync             # v1.2.0：同步外部权威表记录
 POST /api/v1/stores/sources/status           # v1.2.0：来源同步状态分页
 POST /api/v1/stores/sources/delete           # v1.2.0：按稳定 URI 删除外部派生数据
+POST /api/v1/stores/projects/list            # v1.5.1：独立 Store 项目列表
+POST /api/v1/stores/projects/create          # v1.5.1：独立 Store 新建项目
+POST /api/v1/stores/documents/location       # v1.5.1：独立 Store 文档重命名与移动
+POST /api/v1/stores/documents/move-batch     # v1.5.1：独立 Store 批量移动到项目
 ```
 
 推荐的调用路径：
@@ -270,6 +282,14 @@ v1.5.0 把「工作区有未提交修改」从死路变成可选路径：
 - 修复 `restart_required` 无法自动清除：该标志在更新成功后置位，但此前没有任何代码会复位它，服务即便已经重启，状态页仍会一直提示需要重启。服务启动本身就是该标志所要求的那次重启，因此现在在启动时终结它，没有更新记录时也不会新建状态文件。
 
 升级到 1.5.0 后才能使用这两个选项；旧版更新入口在检测到未提交的程序文件修改时仍然直接拒绝。`--force` 会临时移除工作区中的未提交修改，需要对照原始内容时保留备份目录即可。
+
+v1.5.1 是一次补齐与修复版本，沿用同一更新流程：
+
+- 独立 Store 补齐文档组织接口（见上文「独立 Store 文档组织」），此前这些能力只对默认知识库开放。
+- 修复文档导入异常处理失效：`core/knowledge_support.py` 的导入列表缺少 `DocumentImportError`，导致「读取期间超出体积上限」与「导入后未登记来源」两条异常分支在求值 `except` 元组时二次抛出 `NameError`，既掩盖原始错误，也跳过快照描述符清理。该缺陷由 2026-09-08 的知识库领域化拆分引入，与新增端点无关。
+- 修复 Kemo 请求标识符不合规：此前用裸 `uuid4()` 作为 `request_id`，而 Kemo 1.0 要求标识符首字符为字母，UUID 十六进制首位约有六成概率是数字，会被网关以 `400 VALIDATION_ERROR` 拒绝，使查询规划静默降级为原始查询。现改为 `req-<hex>` 前缀形式；网关与 kemo-agent 的协议校验未做任何放宽，仍与协议定义逐字一致。
+- 网页运行日志改为终端流风格（时间、级别标签、正文的单行三列布局），系统配置页新增版本检测，日志日期筛选改用站内自研日期选择器。
+- 应用版本统一为 1.5.1：`version.json`、前端包与锁文件、markitdown 包元数据与说明文档同步；Kemo 1.0、`/api/v1` 与存储格式版本不随应用版本改号。
 
 ## 持续集成
 
