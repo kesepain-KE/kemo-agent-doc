@@ -228,13 +228,13 @@ HTTP 重定向，避免把 Token 发送到配置地址之外的主机。
 
 ## 当前能力边界
 
-Kemo Gateway `0.8.1` 已提供 LLM、Embedding、Rerank、模型发现、能力声明和 Asset API 接口，
+Kemo Gateway `0.8.2` 已提供 LLM、Embedding、Rerank、模型发现、能力声明和 Asset API 接口，
 但 kemo-agent 主 Provider 的自动模型目录使用 `task=llm`，不会把 Embedding 或 Rerank 模型当作对话模型。
 
 图片、音频、视频、普通文件、媒体生成、Provider State 和流恢复属于可扩展协议范围，
 但不能仅凭 `provider.type=kemo` 就视为可用。只有当前网关已经实现对应公开接口、目标 Provider
 明确声明能力、且模型通过真实验证时才能启用。Asset 上传与检索在 `0.7.0` 已可用；
-Provider State 服务或完整流恢复在 `0.8.1` 仍不保证。
+Provider State 服务或完整流恢复在 `0.8.2` 仍不保证。
 
 ### 传输稳定性增强（0.7.1+）
 
@@ -242,7 +242,7 @@ Provider State 服务或完整流恢复在 `0.8.1` 仍不保证。
 
 **SSE 心跳**：流空闲时每 15 秒发送注释心跳（`: kemo-heartbeat\n\n`）。心跳不推进协议 sequence，仅保持代理/CDN/隧道连接活跃。可通过 `SSE_HEARTBEAT_SECONDS` 环境变量调整。
 
-**持久化执行存储**：幂等记录、响应终态和 SSE 事件持久化到 SQLite WAL 数据库 `storage/executions/executions.sqlite3`。连接断开后，客户端可使用相同请求正文、`request_id` 和 `Last-Event-ID` 从下一事件续传。默认保留 24 小时（`EXECUTION_RETENTION_HOURS`）。
+**持久化执行存储**：幂等记录、响应终态和 SSE 事件持久化到 SQLite WAL 数据库 `storage/executions/executions.sqlite3`。连接断开后，客户端可使用相同请求正文、`request_id` 和 `Last-Event-ID` 从下一事件续传。默认保留 7 天（`LOG_RETENTION_DAYS`）。
 
 **执行超时与并发上限**：LLM、Embedding 和 Rerank 受 `MODEL_EXECUTION_TIMEOUT_SECONDS`（默认 900 秒）核心时限保护，超时返回 `GATEWAY_TIMEOUT`。单进程并行执行上限为 `MAX_CONCURRENT_EXECUTIONS`（默认 64），超过时返回 503 `GATEWAY_OVERLOADED`。
 
@@ -361,6 +361,19 @@ Kemo Gateway 管理端在 `0.7.2` 延续安全管理边界，并补充了稳定�
 - **取消与失败边界**：SQLite 提交期间被取消时，先等待已启动事务结束并同步内存重放边界，再传播取消；持久化失败会终止等待中的订阅者，不会让流永久挂起。
 
 升级不需要迁移数据；该优化仍是「先提交、后发布」，不代表断电、磁盘控制器或存储硬件故障下的绝对零丢失。网关与前端管理包统一为 `0.8.1`，源码与前端变更需要重新构建并重启生效。`0.8.0` 的智能体引导、统一测试入口、统计读缓存与共享线路契约门禁继续保留。
+
+## 长期运行与声明式目录热重建（0.8.2）
+
+`0.8.2` 继续以长期运行稳定性为主，不新增公开 API，Kemo Protocol 仍为 `1.0`：
+
+- **七日保留与快速启动**：调用日志、每日统计、Execution、幂等响应和 SSE 重放记录统一由 `LOG_RETENTION_DAYS`（默认 `7`）控制。过期清理在服务就绪后延迟执行，Execution 按小批次删除并在批次之间释放写锁，每日统计按日期文件连同 `-wal`、`-shm` 一起删除；Asset 内容继续使用独立的 `DEFAULT_ASSET_TTL_HOURS`，不属于该策略。
+- **有界 SQLite 维护**：统计库每次访问都显式关闭连接，避免 Windows 下长期占用旧日期数据库句柄；新建 Execution 数据库启用 `auto_vacuum=INCREMENTAL` 并把 WAL 高水位限制为 16 MiB；正常关停只做被动 checkpoint，启动阶段不会自动执行可能长期锁库的完整 `VACUUM`。
+- **Asset 扫描移出启动路径**：启动只完成存储装配、schema 和中断恢复，不再同步扫描全部 Asset；目录扫描与过期内容删除改为后台线程执行，删除前仍按单个资产加锁并重新校验过期时间，避免与并发上传互相干扰。
+- **声明式模型目录候选包**：已有 Provider 可以显式实现 `requires_catalog_rebuild()`。核心只在该 Provider 确认目录或能力配置变化时旁路构造候选包，逐模型校验完整模型名、能力对象与全局路由冲突，全部成功后才在一个无 `await` 的临界段原子切换。候选失败会关闭候选并保留旧 revision、旧路由与旧 Provider，错误信息不回显私有配置。
+- **在途请求代际隔离**：切换后新请求进入新 Provider，已持有引用的请求继续使用旧代际；取消操作按 `response_id` 命中实际创建该响应的代际，不再只按当前轮询指针选择；连续更新产生的多个旧代际分别排空后关闭，不会互相覆盖。
+- **保守重启边界**：模板和普通 Provider 默认不启用目录热重建。Python、`manifest.json`、协议映射、依赖、新增 Provider、`.env` 环境变量与 Web 构建仍必须平滑重启；核心不调用 `importlib.reload()`，也不把 `manifest.json` 当作运行时能力来源。
+
+升级不需要迁移数据；`EXECUTION_RETENTION_HOURS` 不再决定日志周期，未设置 `LOG_RETENTION_DAYS` 时按 7 天执行。网关与前端管理包统一为 `0.8.2`，源码与前端变更需要重新构建并重启生效。`0.8.1` 的流式日志落盘边界、`0.8.0` 的统一测试入口与统计读缓存继续保留。
 
 ## 网关自更新与冲突恢复
 
