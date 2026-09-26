@@ -19,7 +19,7 @@ v1.3.1 只做一件事：**让 kemo-agent 能被四种方式一键装起来，�
 四条入口都从同一份 GitHub Release 资产安装，因此版本只有一个真相——根目录的 `version.json`：
 
 - **Windows / Linux** 用一条命令拉起安装脚本，装到用户主目录下的 `.kemo-agent`。更新就是把**同一条命令再跑一遍**，脚本自己判断版本，决定装还是升。
-- **npm** 与 **Docker** 走包管理器：更新是**换一个版本号**。`npm install -g @kesepain/kemo-agent@latest`，或者 `docker compose pull && docker compose up -d`。
+- **npm** 从 Release 资产直装，更新是**重跑同一条命令**（URL 里的 `latest` 永远指向最新版）；**Docker** 走包管理器，更新是**换一个版本号**：`docker compose pull && docker compose up -d`。
 
 两种方式的共同点是：**程序文件跟着包走，用户数据原地不动。** 聊天历史、记忆、自建拓展与感知、凭据、配置全部受保护清单保护，升级时只覆盖代码。
 

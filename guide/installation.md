@@ -25,9 +25,11 @@ python3 "$HOME/.kemo-agent/deploy/deploy.py" start
 ### npm
 
 ```sh
-npm install -g @kesepain/kemo-agent
+npm install -g https://github.com/kesepain-KE/kemo-agent/releases/latest/download/kemo-agent-npm.tgz
 kemo
 ```
+
+分发包直接从 GitHub Release 资产安装，**不需要任何 registry 凭据**。
 
 ### Docker
 
@@ -42,7 +44,7 @@ curl -fsSL https://raw.githubusercontent.com/kesepain-KE/kemo-agent/main/deploy/
 | 渠道 | 更新方式 |
 |---|---|
 | Windows / Linux | **重跑同一条安装命令**，脚本自己判断版本 |
-| npm | `npm install -g @kesepain/kemo-agent@latest` |
+| npm | 重跑同一条安装命令（URL 中的 `latest` 永远指向最新版） |
 | Docker | `docker compose pull && docker compose up -d` |
 
 **程序文件跟着包走，用户数据原地不动**——聊天历史、记忆、自建拓展与感知、凭据和配置都在保护清单里，升级只覆盖代码。更新前建议先停止应用。
