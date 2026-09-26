@@ -1,5 +1,62 @@
 # 安装部署
 
+安装 kemo-agent 有两条路：**一键部署**（推荐，四条渠道任选）和**源码安装**（开发者路径）。两者互不影响，一键部署不会动你已有的源码目录。
+
+## 一键部署（v1.3.1 起）
+
+四条渠道都从同一份 GitHub Release 资产安装，因此版本只有一个真相——根目录的 `version.json`。
+
+### Windows
+
+```powershell
+irm https://raw.githubusercontent.com/kesepain-KE/kemo-agent/main/deploy/windows/install.ps1 | iex
+python "$env:USERPROFILE\.kemo-agent\deploy\deploy.py" start
+```
+
+仅有 `py` 启动器时，把第二行的 `python` 换成 `py -3`。
+
+### Linux
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/kesepain-KE/kemo-agent/main/deploy/linux/install.sh | sh
+python3 "$HOME/.kemo-agent/deploy/deploy.py" start
+```
+
+### npm
+
+```sh
+npm install -g @kesepain/kemo-agent
+kemo
+```
+
+### Docker
+
+在一个专用且后续固定的 Compose 项目目录中执行：
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/kesepain-KE/kemo-agent/main/deploy/docker/docker-compose.yml -o docker-compose.yml && docker compose up -d
+```
+
+### 更新
+
+| 渠道 | 更新方式 |
+|---|---|
+| Windows / Linux | **重跑同一条安装命令**，脚本自己判断版本 |
+| npm | `npm install -g @kesepain/kemo-agent@latest` |
+| Docker | `docker compose pull && docker compose up -d` |
+
+**程序文件跟着包走，用户数据原地不动**——聊天历史、记忆、自建拓展与感知、凭据和配置都在保护清单里，升级只覆盖代码。更新前建议先停止应用。
+
+::: tip 前置条件
+Windows / Linux 需要 Python 3.10+；npm 需要 Node 18+ 与可用的 Python 虚拟环境；Docker 需要 Docker Engine 与 Compose。只有部署器本身零第三方依赖，应用运行依赖仍需安装。
+:::
+
+::: warning 发布状态
+一键部署依赖已发布的 Release 资产与安装脚本。npm 分发包与 Docker 镜像是否可用，取决于对应渠道是否已经发布。
+:::
+
+## 源码安装
+
 安装向导覆盖后端依赖、环境变量、前端构建和首个用户创建。本页也说明各参数适合什么场景。
 
 ## 安装向导的六个阶段
