@@ -34,6 +34,10 @@ python cli.py --prompt "检查状态" --output json
 | `--show-reasoning` | 把 reasoning 增量输出到 stderr |
 | `--no-stream` | 等待完整响应后一次输出 |
 
+## 会话来源
+
+CLI 使用独立的 `cli` 来源会话，并在正常结束、交互退出或异常收束时关闭。它与 Web、App 和外部消息共享同一用户身份、记忆与工作空间，但历史彼此隔离；在网页历史抽屉里可以按来源只读查看。
+
 ## 交互命令
 
 会话管理提供 `/new`、`/sessions`、`/use`、`/history`、`/status`、`/compress`；记忆管理提供 `/memory`、`/remember`、`/forget`；计划和 Cron 分别使用 `/plan*` 与 `/cron*` 命令族。输入 `/exit` 退出。
