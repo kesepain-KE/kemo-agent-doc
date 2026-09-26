@@ -111,13 +111,15 @@ Chat 模式保持原有行为，不访问 Kemo 能力接口。
 | `task_cron_system.sense_update_rate` | integer | `5` | 感知刷新间隔（秒） |
 | `task_cron_system.expand_update_rate` | integer | `5` | 拓展刷新间隔（秒） |
 | `task_cron_system.module_update_timeout` | integer | `120` | 单模块刷新子进程超时（秒） |
+| `task_cron_system.runtime_checkpoint_seconds` | number | `300` | 高频系统任务状态写回检查点间隔（秒，1–3600） |
+| `task_cron_system.success_log_flush_seconds` | number | `300` | 高频系统任务成功日志聚合窗口（秒，1–3600） |
 | `tools.timeout` | integer | `240` | 单次工具执行超时（秒） |
 | `tools.max_iterations` | integer | `80` | 一轮 Run 的工具迭代上限 |
 | `tools.invalid_tool_arguments_retries` | integer | `2` | 工具参数异常自动恢复次数，`0` 表示禁用 |
 | `history.recent_full_rounds` | integer | `3` | 摘要保护的最近完整轮数 |
 | `history.consecutive_tool_fail_limit` | integer | `5` | 同一工具连续失败临时移除阈值 |
 | `memory.extraction_mode` | string | `"compression_only"` | 记忆提取模式（`disabled` / `compression_only` / `background` / `on_commit`） |
-| `memory.important_memory_max_chars` | integer | `5000` | 临时重要记忆注入字符上限 |
+| `memory.important_memory_max_chars` | integer | `20000` | 临时重要记忆注入字符上限 |
 | `agents.max_rounds` | integer | `80` | runtime 窗口轮次上限 |
 | `agents.token_limit` | integer | `1000000` | Token 总上限 |
 | `agents.conserved_rounds` | integer | `3` | 保留完整工具日志的最近轮数 |

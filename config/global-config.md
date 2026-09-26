@@ -87,11 +87,12 @@
 | `memory.extraction_mode` | string | `"compression_only"` | `disabled`、`compression_only`、`background` 或 `on_commit` |
 | `memory.recovery_max_rounds_per_scan` | integer | `10` | 单次恢复扫描最多补处理的轮数，运行时范围 1–20 |
 | `memory.extraction_batch_rounds` | integer | `5` | 一次模型分析最多处理的连续轮数，运行时范围 1–20 |
-| `memory.extraction_max_candidates_per_batch` | integer | `10` | 单批最多保留的候选记忆数，运行时硬上限 40 |
+| `memory.extraction_max_candidates_per_batch` | integer | `30` | 单批最多保留的独立记忆候选，运行时硬上限 40 |
 | `memory.temporary_injection_limits.half_year` | integer | `100` | 半年层单次注入文件数上限 |
 | `memory.temporary_injection_limits.one_month` | integer | `200` | 一月层单次注入文件数上限 |
 | `memory.temporary_injection_limits.seven_days` | integer | `300` | 七天层单次注入文件数上限 |
-| `memory.important_memory_max_chars` | integer | `5000` | 临时重要记忆字符上限 |
+| `memory.important_memory_max_chars` | integer | `20000` | 临时重要热画像的注入字符预算，注入时按该值截断 |
+| `memory.important_memory_output_max_chars` | integer | `20000` | 临时重要热画像模型输出的防失控上限；超过后拒绝本次更新且不覆盖旧内容 |
 | `memory.history_read_enabled` | boolean | `true` | 是否允许历史读取能力 |
 | `memory.tiers.seven_days.days` | integer | `7` | 七天层固定期限 |
 | `memory.tiers.seven_days.upgrade_threshold` | integer | `3` | 七天层晋级阈值 |
@@ -111,13 +112,18 @@
 | `agent_runtime.default_timeout` | integer | `600` | 子代理整体执行期限（秒）；到期后请求协作式取消 |
 | `agent_runtime.timeout_survival_seconds` | integer | `120` | 期限到达后的收尾存活期（秒）；存活期内自然完成仍保留结果 |
 | `task_plan.max_steps` | integer | `20` | 计划最大步骤数 |
+| `task_plan.auto_retry_on_fix` | boolean | `false` | 修正失败步骤后是否自动等待执行器领取，否则仍需用户批准 |
 | `cron.enabled` | boolean | `true` | 启用 Cron 调度 |
+| `cron.history_retention_days` | integer | `7` | 定时任务历史对话保留天数，范围 0–3650；`0` 表示永久保留。只能写在全局配置，用户配置不能覆盖 |
+| `cron.session_idle_close_seconds` | integer | `86400` | 未关闭会话的闲置阈值（秒），最小 3600，非法值回退 24 小时 |
 | `cron.poll_interval` | integer | `30` | 常规轮询间隔（秒） |
 | `cron.avoid_congestion` | boolean | `true` | Provider 拥塞时推迟普通任务 |
 | `cron.congestion_threshold_ratio` | number | `0.2` | 判定拥塞的可用槽位比例 |
 | `task_cron_system.sense_update_rate` | integer | `5` | 感知刷新间隔（秒） |
 | `task_cron_system.expand_update_rate` | integer | `5` | 拓展刷新间隔（秒） |
 | `task_cron_system.module_update_timeout` | integer | `120` | 单模块刷新子进程超时（秒） |
+| `task_cron_system.runtime_checkpoint_seconds` | number | `300` | 高频系统任务把内存状态写回任务文件的检查点间隔（秒，1–3600） |
+| `task_cron_system.success_log_flush_seconds` | number | `300` | 高频系统任务成功日志的内存聚合窗口（秒，1–3600） |
 | `runtime_host.enable_background_scheduler` | boolean | `true` | 启动统一后台调度器 |
 
 ## 历史摘要后台任务
@@ -127,7 +133,7 @@
 | 字段 | 类型 | 默认值 | 说明 |
 |---|---|---:|---|
 | `history_summary.poll_interval` | number | `5` | 持久摘要任务扫描间隔（秒） |
-| `history_summary.max_jobs_per_cycle` | integer | `1` | 每轮最多领取的摘要任务数 |
+| `history_summary.max_jobs_per_cycle` | integer | `3` | 每轮最多领取的摘要任务数 |
 | `history_summary.max_attempts` | integer | `5` | 自动尝试上限；耗尽后等待用户手动重试 |
 | `history_summary.retry_delays_seconds` | integer[] | `[30, 120, 600, 1800]` | 各次失败后的退避时间，超出数组后沿用最后一项 |
 
