@@ -1,6 +1,6 @@
 # 系统提示词
 
-`build_prompt_bundle()` 不再拼接一段不可观察的字符串，而是按固定契约生成 15 个 `PromptSection`，同时保留字符数、截断、资源选择和记忆文件等诊断信息。
+`build_prompt_bundle()` 不再拼接一段不可观察的字符串，而是按固定契约生成 16 个 `PromptSection`，同时保留字符数、截断、资源选择和记忆文件等诊断信息。
 
 ## 固定顺序
 
@@ -32,7 +32,7 @@ Kemo Graph 不再是独立 Prompt 段，也不替换、增强或缩减任何知�
 
 ## 动态段生命周期与三态注入（v1.0.3 / v1.0.5 起）
 
-15 个段按生命周期分为两类：
+16 个段按生命周期分为两类：
 
 - **静态段**：人格、运行手册、子代理/插件/技能注册、知识索引、记忆与任务计划等段，在一轮用户对话开始时构建一次，本轮内保持稳定；
 - **动态段**：`[expand_data]` 与 `[perception]` 属于 `DYNAMIC_PROMPT_SECTION_NAMES`，由 `refresh_dynamic_prompt_bundle()` 管理，刷新节奏由用户配置决定。
@@ -52,5 +52,5 @@ Kemo Graph 不再是独立 Prompt 段，也不替换、增强或缩减任何知�
 `prompt.char_limits` 控制任务计划、感知、拓展、技能和插件等动态段的字符预算；临时记忆另有每层文件数限制。`PromptBundle.diagnostics` 记录段顺序、总字符数、知识文档和资源选择诊断。
 
 ::: warning 文档版本
-早期资料中的“6 段”“14 段”“17 段”或“图谱替换标记”是 1.0.0 之前的旧设计。当前源码 `PROMPT_SECTION_ORDER` 明确列出 15 个段（含尾部的 `perception`）。
+早期资料中的“6 段”“14 段”“15 段”或“图谱替换标记”是旧设计的说法。当前源码 `PROMPT_SECTION_ORDER` 明确列出 16 个段（含尾部的 `perception`）。
 :::

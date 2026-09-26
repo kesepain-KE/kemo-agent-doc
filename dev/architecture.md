@@ -31,9 +31,11 @@ Web 后端按“应用装配—路由—领域服务—公共契约”组织，�
 | 路径 | 职责 |
 |---|---|
 | `web/app.py` | 创建 FastAPI 应用、装配共享运行时并注册路由；保留聊天流等核心入口 |
+| `web/app_factory.py` | 应用装配细节 |
+| `web/auth.py` | Web 认证与会话签名 |
 | `web/routes/` | 按 identity、sessions、files、modules、settings、tasks 等功能域声明 HTTP 路由 |
 | `web/service.py` | 对外兼容门面、聊天相关核心服务和既有测试兼容入口 |
-| `web/services/` | 文件、用户、知识、记忆、模块、技能、任务、运行状态与产物校验和找回等领域实现（含 v1.0.5 新增 `artifact_resolver.py`） |
+| `web/services/` | 文件、用户、知识、记忆、模块、技能、任务、运行状态、模块面板与产物校验和找回等领域实现 |
 | `web/schemas.py` | Web 请求与响应的数据模型 |
 | `web/errors.py` | Web 层稳定异常类型与错误边界 |
 | `web/constants.py` | 上传、预览、技能归档等共享限制和类型映射 |
@@ -58,26 +60,23 @@ Web 后端按“应用装配—路由—领域服务—公共契约”组织，�
 
 ## 运行模块职责
 
-`run/engine.py` 保留对外兼容入口，主循环由 `conversation_runtime.py` 负责。其余领域模块按职责拆分：
+`run/engine.py` 只保留稳定公共门面，其余按职责拆成目录：
 
-| 模块 | 职责 |
+| 目录 | 职责 |
 |---|---|
-| `context_service.py` | 上下文选择、压缩与重试 |
-| `request_input.py` | 请求与附件输入准备 |
-| `guidance.py` | 当前 Run 与下一轮之间的引导邮箱和结构化信封 |
-| `guidance_runtime.py` | 引导附件二次验证、能力路由与 Provider 消息准备 |
-| `provider_events.py` | Provider 事件归一化 |
-| `run_state.py` | 单轮运行状态与终态信息 |
-| `round_finalizer.py` | 成功、失败和取消的提交边界 |
-| `attachments.py` | Web、消息和工具路径的 Run 资产解析与媒体验证 |
-| `expand_runtime.py` | 拓展发现、隔离调用、产物发布与运行诊断 |
-| `module_runtime.py` | 感知/拓展模块锁、子进程协议和进程树回收 |
-| `session_runtime.py` | 会话锁与运行会话辅助 |
-| `memory_analysis.py` | 记忆候选批处理与持久化编排 |
-| `usage.py` | 用量累计与展示数据 |
-| `source_policy.py` | 拓展/感知注入策略与实时开关解析（v1.0.5 新增） |
-| `errors.py` | 稳定运行时异常类型 |
-| `log_store.py` | Cron 与外部消息结构化日志、旧文件迁移和保留策略 |
+| `run/conversation/` | 对话编排：请求准备、主循环、Provider 交换、引导邮箱与终态提交 |
+| `run/context/` | 上下文选择、压缩与摘要 |
+| `run/history/` | 历史窗口、会话生命周期、检索索引与摘要调度 |
+| `run/memory/` | 记忆候选、加权证据、碎片与晋升 |
+| `run/retry/` | 统一的重试策略与恢复 |
+| `run/agents/` | 子代理运行、队列与调度 |
+| `run/tasks/` | 任务计划存储、校验与执行 |
+| `run/scheduler/` | RuntimeHost、Cron、维护与巡检 |
+| `run/tools/` | 工具执行、后台作业与执行看门狗 |
+| `run/extensions/` | 拓展与感知运行时、附件与媒体路由 |
+| `run/config/` | 提示词来源、用户与知识配置 |
+| `run/infra/` | 原子写、进程管理、日志与命令行基础设施 |
+| `run/long_task/` | 会话级长任务状态机 |
 
 拆分不改变调用方入口，目的是让状态、上下文、记忆和终态提交各自保持清晰边界。
 
