@@ -84,13 +84,38 @@ import { withBase } from 'vitepress'
 
 ## 开始体验
 
-```bash
+<p class="home-lead">四条一键渠道任选其一，也可以从源码构建。安装后默认访问 <code>http://127.0.0.1:1357</code>，初次使用建议从网页端开始。</p>
+
+::: code-group
+
+```powershell [Windows]
+irm https://raw.githubusercontent.com/kesepain-KE/kemo-agent/main/deploy/windows/install.ps1 | iex
+python "$env:USERPROFILE\.kemo-agent\deploy\deploy.py" start
+```
+
+```sh [Linux]
+curl -fsSL https://raw.githubusercontent.com/kesepain-KE/kemo-agent/main/deploy/linux/install.sh | sh
+python3 "$HOME/.kemo-agent/deploy/deploy.py" start
+```
+
+```sh [npm]
+npm install -g https://github.com/kesepain-KE/kemo-agent/releases/latest/download/kemo-agent-npm.tgz
+kemo
+```
+
+```sh [Docker]
+curl -fsSL https://raw.githubusercontent.com/kesepain-KE/kemo-agent/main/deploy/docker/docker-compose.yml -o docker-compose.yml && docker compose up -d
+```
+
+```bash [源码]
 git clone https://github.com/kesepain-KE/kemo-agent.git
 cd kemo-agent
 python setup.py
 python start_web.py
 ```
 
-默认访问 `http://127.0.0.1:1357`。初次使用建议从网页端开始。
+:::
+
+<p class="home-hint">一键渠道都从同一份 Release 资产安装，版本只有一个真相；源码方式适合开发者。完整说明见 <a href="/guide/installation">安装部署</a>。</p>
 
 </section>
