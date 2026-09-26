@@ -85,6 +85,7 @@ export default defineConfig({
         collapsed: false,
         items: [
           { text: 'Web UI', link: '/usage/webui' },
+          { text: '正文内联组件', link: '/usage/inline-widgets' },
           { text: '命令行', link: '/usage/cli' },
           { text: '对话与历史', link: '/usage/chat-history' },
           { text: '知识库', link: '/usage/knowledge-base' },
@@ -124,6 +125,7 @@ export default defineConfig({
         collapsed: false,
         items: [
           { text: '运行原理', link: '/internals/runtime' },
+          { text: '重试与中断恢复', link: '/internals/retry' },
           { text: '系统提示词', link: '/internals/system-prompt' },
           { text: '上下文管理', link: '/internals/context-management' },
           { text: '历史存储', link: '/internals/history-storage' },
