@@ -10,10 +10,10 @@
 
 ```powershell
 irm https://raw.githubusercontent.com/kesepain-KE/kemo-agent/main/deploy/windows/install.ps1 | iex
-python "$env:USERPROFILE\.kemo-agent\deploy\deploy.py" start
+& "$env:USERPROFILE\.kemo-agent\deploy\deploy.cmd" start
 ```
 
-仅有 `py` 启动器时，把第二行的 `python` 换成 `py -3`。
+仅有 `py` 启动器时，改用 `py -3 "$env:USERPROFILE\.kemo-agent\deploy\deploy.py" start`。
 
 ### Linux
 

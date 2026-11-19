@@ -90,7 +90,7 @@ import { withBase } from 'vitepress'
 
 ```powershell [Windows]
 irm https://raw.githubusercontent.com/kesepain-KE/kemo-agent/main/deploy/windows/install.ps1 | iex
-python "$env:USERPROFILE\.kemo-agent\deploy\deploy.py" start
+& "$env:USERPROFILE\.kemo-agent\deploy\deploy.cmd" start
 ```
 
 ```sh [Linux]
