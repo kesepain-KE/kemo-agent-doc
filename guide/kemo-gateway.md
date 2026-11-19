@@ -2,7 +2,7 @@
 
 [Kemo Provider Gateway](https://github.com/kesepain-KE/kemo-adapter-api) 是
 `provider.type=kemo` 对应的原生模型网关。它把不同厂商的鉴权、请求格式、流式事件、工具调用、
-错误和 Token 计量封装在独立 Provider 包中；kemo-agent 只面对 Kemo Protocol `1.0`。
+错误和 Token 计量封装在独立 Provider 包中；kemo-agent 只面对 Kemo Protocol `2.0`。
 
 本页只说明 **kemo-agent 如何连接网关**。网关部署、Provider 创建和完整公开协议以
 [网关 README](https://github.com/kesepain-KE/kemo-adapter-api/blob/main/README.md) 与
@@ -158,7 +158,7 @@ X-Kemo-Protocol-Version: 1.0
 
 ## 文本、流式和工具调用
 
-选择模型后，kemo-agent 使用 `POST /model/responses`，并发送 Kemo Protocol `1.0`、Bearer
+选择模型后，kemo-agent 使用 `POST /model/responses`，并发送 Kemo Protocol `2.0`、Bearer
 鉴权、`Idempotency-Key` 和请求 ID。普通文本、SSE 流式、推理档位或工具调用能否使用，最终
 取决于目标 Provider 对该模型的真实声明与实现。
 
